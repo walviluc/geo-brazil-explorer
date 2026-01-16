@@ -1,24 +1,26 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Map, Loader2, Lock, CheckCircle } from "lucide-react";
-import { downloadLayerAsGeoJSON, isLayerFree } from "@/lib/wms-explorer";
+import { Download, Map, Loader2, Lock, CheckCircle, Crown } from "lucide-react";
+import { downloadLayerAsGeoJSON, isLayerFree, canAccessLayer, PlanType } from "@/lib/wms-explorer";
 
 interface LayerCardProps {
   name: string;
   title: string;
   abstract: string;
+  userPlan?: PlanType;
   onShowMap: () => void;
 }
 
-export function LayerCard({ name, title, abstract, onShowMap }: LayerCardProps) {
+export function LayerCard({ name, title, abstract, userPlan = 'gratuito', onShowMap }: LayerCardProps) {
   const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   
   const isFree = isLayerFree(name);
+  const hasAccess = canAccessLayer(name, userPlan);
 
   const handleDownload = async () => {
-    if (!isFree) return;
+    if (!hasAccess) return;
     
     setDownloading(true);
     setStatus('idle');
@@ -61,6 +63,11 @@ export function LayerCard({ name, title, abstract, onShowMap }: LayerCardProps) 
             <CheckCircle className="w-3 h-3" />
             Grátis
           </span>
+        ) : hasAccess ? (
+          <span className="flex-shrink-0 px-2 py-1 rounded-full bg-accent/10 text-accent-foreground text-xs font-medium flex items-center gap-1">
+            <Crown className="w-3 h-3" />
+            Incluso
+          </span>
         ) : (
           <span className="flex-shrink-0 px-2 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium flex items-center gap-1">
             <Lock className="w-3 h-3" />
@@ -75,18 +82,20 @@ export function LayerCard({ name, title, abstract, onShowMap }: LayerCardProps) 
       
       <div className="flex gap-2">
         <Button 
-          variant={isFree ? "default" : "outline"} 
+          variant={hasAccess ? "default" : "outline"} 
           size="sm" 
           onClick={handleDownload}
-          disabled={downloading || !isFree}
+          disabled={downloading || !hasAccess}
           className="flex-1"
         >
           {downloading ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
+          ) : hasAccess ? (
             <Download className="w-4 h-4 mr-2" />
+          ) : (
+            <Lock className="w-4 h-4 mr-2" />
           )}
-          {isFree ? 'Baixar JSON' : 'Premium'}
+          {hasAccess ? 'Baixar JSON' : 'Fazer Upgrade'}
         </Button>
         <Button variant="outline" size="sm" onClick={onShowMap} className="flex-1">
           <Map className="w-4 h-4 mr-2" />

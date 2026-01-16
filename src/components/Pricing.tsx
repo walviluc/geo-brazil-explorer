@@ -1,6 +1,8 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Check, Star } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 const plans = [
   {
@@ -64,6 +66,16 @@ const plans = [
 
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handlePlanClick = (planName: string) => {
+    if (user) {
+      navigate('/subscription');
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <section id="pricing" className="py-20 bg-background">
@@ -159,6 +171,7 @@ export function Pricing() {
                 className="w-full" 
                 variant={plan.popular ? "default" : "outline"}
                 size="lg"
+                onClick={() => handlePlanClick(plan.name)}
               >
                 {plan.cta}
               </Button>
