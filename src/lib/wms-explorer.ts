@@ -191,3 +191,19 @@ export function isLayerFree(layerName: string): boolean {
     layerName.toLowerCase().includes(freeLayer.toLowerCase().split(':')[1])
   );
 }
+
+export type PlanType = 'gratuito' | 'profissional' | 'completo';
+
+export function canAccessLayer(layerName: string, userPlan: PlanType): boolean {
+  // Free layers accessible to everyone
+  if (isLayerFree(layerName)) return true;
+  
+  // Completo plan has access to everything
+  if (userPlan === 'completo') return true;
+  
+  // Profissional plan has access to most layers except premium
+  if (userPlan === 'profissional') return true;
+  
+  // Gratuito only has access to free layers
+  return false;
+}

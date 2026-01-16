@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Database, Layers, RefreshCw } from "lucide-react";
-import { fetchLayers, groupLayersByState, Layer, UF_NAMES } from "@/lib/wms-explorer";
+import { Loader2, Search, Database, Layers, RefreshCw, Lock } from "lucide-react";
+import { fetchLayers, groupLayersByState, Layer, UF_NAMES, canAccessLayer, PlanType } from "@/lib/wms-explorer";
 import { StateCard } from "./StateCard";
 import { StateModal } from "./StateModal";
 import { MapModal } from "./MapModal";
 
-export function Explorer() {
+interface ExplorerProps {
+  userPlan?: 'gratuito' | 'profissional' | 'completo';
+}
+
+export function Explorer({ userPlan = 'gratuito' }: ExplorerProps) {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [filteredLayers, setFilteredLayers] = useState<Layer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -153,6 +157,7 @@ export function Explorer() {
         <StateModal
           uf={selectedState.uf}
           layers={selectedState.layers}
+          userPlan={userPlan}
           onClose={() => setSelectedState(null)}
           onShowMap={(layer) => {
             setMapLayer(layer);
