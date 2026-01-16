@@ -1,0 +1,171 @@
+import { Button } from "@/components/ui/button";
+import { Check, Star } from "lucide-react";
+import { useState } from "react";
+
+const plans = [
+  {
+    name: "Gratuito",
+    description: "Perfeito para conhecer a plataforma",
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    features: [
+      "Acesso a Unidades de Conservação Federal",
+      "Acesso a CAR Uso Restrito",
+      "Visualização no mapa",
+      "Download em GeoJSON",
+      "Busca por estado",
+    ],
+    excluded: [
+      "Camadas premium",
+      "Atualizações prioritárias",
+      "Suporte dedicado"
+    ],
+    cta: "Começar Grátis",
+    popular: false
+  },
+  {
+    name: "Profissional",
+    description: "Para profissionais e pequenas equipes",
+    monthlyPrice: 29.90,
+    yearlyPrice: 20,
+    features: [
+      "Tudo do plano Gratuito",
+      "Acesso a 50+ camadas adicionais",
+      "Territórios Indígenas",
+      "Áreas de Proteção Ambiental",
+      "Download ilimitado",
+      "Suporte por email"
+    ],
+    excluded: [
+      "Todas as camadas disponíveis"
+    ],
+    cta: "Assinar Profissional",
+    popular: true
+  },
+  {
+    name: "Completo",
+    description: "Acesso total para empresas e pesquisadores",
+    monthlyPrice: 60,
+    yearlyPrice: 45,
+    features: [
+      "Acesso a TODAS as camadas",
+      "Atualizações em tempo real",
+      "API de integração",
+      "Suporte prioritário 24/7",
+      "Dados históricos",
+      "Exportação em múltiplos formatos",
+      "Dashboard personalizado"
+    ],
+    excluded: [],
+    cta: "Assinar Completo",
+    popular: false
+  }
+];
+
+export function Pricing() {
+  const [isYearly, setIsYearly] = useState(false);
+
+  return (
+    <section id="pricing" className="py-20 bg-background">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+            Planos de Acesso
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+            Escolha o plano ideal para suas necessidades de dados geoespaciais
+          </p>
+          
+          {/* Toggle */}
+          <div className="inline-flex items-center gap-4 p-1 rounded-full bg-muted">
+            <button
+              onClick={() => setIsYearly(false)}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                !isYearly ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Mensal
+            </button>
+            <button
+              onClick={() => setIsYearly(true)}
+              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                isYearly ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Anual <span className="text-xs opacity-80">(até 25% off)</span>
+            </button>
+          </div>
+        </div>
+        
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {plans.map((plan, index) => (
+            <div 
+              key={index}
+              className={`relative rounded-2xl p-8 ${
+                plan.popular 
+                  ? 'bg-secondary border-2 border-primary shadow-xl scale-105' 
+                  : 'bg-card border border-border'
+              }`}
+            >
+              {plan.popular && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1">
+                  <Star className="w-4 h-4" />
+                  Mais Popular
+                </div>
+              )}
+              
+              <div className="text-center mb-6">
+                <h3 className={`text-2xl font-bold mb-2 ${plan.popular ? 'text-secondary-foreground' : 'text-foreground'}`}>
+                  {plan.name}
+                </h3>
+                <p className={`text-sm ${plan.popular ? 'text-secondary-foreground/70' : 'text-muted-foreground'}`}>
+                  {plan.description}
+                </p>
+              </div>
+              
+              <div className="text-center mb-8">
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className={`text-lg ${plan.popular ? 'text-secondary-foreground/70' : 'text-muted-foreground'}`}>R$</span>
+                  <span className={`text-5xl font-bold ${plan.popular ? 'text-secondary-foreground' : 'text-foreground'}`}>
+                    {isYearly ? plan.yearlyPrice.toFixed(0) : plan.monthlyPrice.toFixed(0).replace('.', ',')}
+                  </span>
+                  {plan.monthlyPrice > 0 && (
+                    <span className={`text-sm ${plan.popular ? 'text-secondary-foreground/70' : 'text-muted-foreground'}`}>/mês</span>
+                  )}
+                </div>
+                {isYearly && plan.monthlyPrice > 0 && (
+                  <p className={`text-sm mt-2 ${plan.popular ? 'text-secondary-foreground/60' : 'text-muted-foreground'}`}>
+                    cobrado anualmente (R$ {(plan.yearlyPrice * 12).toFixed(0)}/ano)
+                  </p>
+                )}
+              </div>
+              
+              <ul className="space-y-3 mb-8">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <Check className={`w-5 h-5 mt-0.5 flex-shrink-0 ${plan.popular ? 'text-primary' : 'text-primary'}`} />
+                    <span className={`text-sm ${plan.popular ? 'text-secondary-foreground' : 'text-foreground'}`}>{feature}</span>
+                  </li>
+                ))}
+                {plan.excluded.map((feature, i) => (
+                  <li key={`ex-${i}`} className="flex items-start gap-3 opacity-50">
+                    <span className={`w-5 h-5 mt-0.5 flex-shrink-0 text-center ${plan.popular ? 'text-secondary-foreground/50' : 'text-muted-foreground'}`}>—</span>
+                    <span className={`text-sm line-through ${plan.popular ? 'text-secondary-foreground/50' : 'text-muted-foreground'}`}>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <Button 
+                className="w-full" 
+                variant={plan.popular ? "default" : "outline"}
+                size="lg"
+              >
+                {plan.cta}
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

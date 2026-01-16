@@ -1,0 +1,58 @@
+import { MapPin, Mail, Phone } from "lucide-react";
+
+export function Footer() {
+  return (
+    <footer className="bg-secondary py-12">
+      <div className="container mx-auto px-4">
+        <div className="grid md:grid-cols-4 gap-8 mb-8">
+          {/* Brand */}
+          <div className="md:col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin className="w-6 h-6 text-primary" />
+              <span className="text-xl font-bold text-secondary-foreground">GeoData Brasil</span>
+            </div>
+            <p className="text-secondary-foreground/70 max-w-md">
+              Sua plataforma de consulta de dados geoespaciais do Brasil. 
+              Acesse informações oficiais de todos os estados brasileiros em um só lugar.
+            </p>
+          </div>
+          
+          {/* Links */}
+          <div>
+            <h4 className="font-semibold text-secondary-foreground mb-4">Links</h4>
+            <ul className="space-y-2 text-secondary-foreground/70">
+              <li><a href="#explorer" className="hover:text-primary transition-colors">Explorar Dados</a></li>
+              <li><a href="#pricing" className="hover:text-primary transition-colors">Planos</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">Documentação</a></li>
+              <li><a href="#" className="hover:text-primary transition-colors">API</a></li>
+            </ul>
+          </div>
+          
+          {/* Contact */}
+          <div>
+            <h4 className="font-semibold text-secondary-foreground mb-4">Contato</h4>
+            <ul className="space-y-3 text-secondary-foreground/70">
+              <li className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                <a href="mailto:contato@geodatabrasil.com" className="hover:text-primary transition-colors">
+                  contato@geodatabrasil.com
+                </a>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                <span>(11) 9999-9999</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t border-secondary-foreground/10 pt-8 text-center text-secondary-foreground/50 text-sm">
+          <p>© {new Date().getFullYear()} GeoData Brasil. Todos os direitos reservados.</p>
+          <p className="mt-2">
+            Dados provenientes do <a href="https://portalmaps.com.br" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Portal Maps</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
