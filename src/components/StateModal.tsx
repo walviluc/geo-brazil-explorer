@@ -6,12 +6,12 @@ import { Layer, UF_NAMES, PlanType } from "@/lib/wms-explorer";
 interface StateModalProps {
   uf: string;
   layers: Layer[];
-  userPlan?: PlanType;
+  userPlan: PlanType;
   onClose: () => void;
   onShowMap: (layer: Layer) => void;
 }
 
-export function StateModal({ uf, layers, userPlan = 'gratuito', onClose, onShowMap }: StateModalProps) {
+export function StateModal({ uf, layers, userPlan, onClose, onShowMap }: StateModalProps) {
   const stateName = uf === 'OUTROS' ? 'Outros' : UF_NAMES[uf] || uf;
 
   return (

@@ -1,26 +1,34 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, Map, Loader2, Lock, CheckCircle, Crown } from "lucide-react";
+import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn } from "lucide-react";
 import { downloadLayerAsGeoJSON, isLayerFree, canAccessLayer, PlanType } from "@/lib/wms-explorer";
 
 interface LayerCardProps {
   name: string;
   title: string;
   abstract: string;
-  userPlan?: PlanType;
+  userPlan: PlanType;
   onShowMap: () => void;
 }
 
-export function LayerCard({ name, title, abstract, userPlan = 'gratuito', onShowMap }: LayerCardProps) {
+export function LayerCard({ name, title, abstract, userPlan, onShowMap }: LayerCardProps) {
+  const navigate = useNavigate();
   const [downloading, setDownloading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   
   const isFree = isLayerFree(name);
   const hasAccess = canAccessLayer(name, userPlan);
+  const isLoggedIn = userPlan !== null;
 
   const handleDownload = async () => {
-    if (!hasAccess) return;
+    if (!hasAccess) {
+      if (!isLoggedIn) {
+        navigate('/auth');
+      }
+      return;
+    }
     
     setDownloading(true);
     setStatus('idle');
@@ -51,6 +59,52 @@ export function LayerCard({ name, title, abstract, userPlan = 'gratuito', onShow
     }
   };
 
+  const handleMapClick = () => {
+    if (!isLoggedIn && isFree) {
+      navigate('/auth');
+      return;
+    }
+    onShowMap();
+  };
+
+  const getButtonLabel = () => {
+    if (!isLoggedIn) return isFree ? 'Fazer Login' : 'Fazer Login';
+    if (!hasAccess) return 'Fazer Upgrade';
+    return 'Baixar JSON';
+  };
+
+  const getButtonIcon = () => {
+    if (downloading) return <Loader2 className="w-4 h-4 mr-2 animate-spin" />;
+    if (!isLoggedIn) return <LogIn className="w-4 h-4 mr-2" />;
+    if (!hasAccess) return <Lock className="w-4 h-4 mr-2" />;
+    return <Download className="w-4 h-4 mr-2" />;
+  };
+
+  const getBadge = () => {
+    if (isFree) {
+      return (
+        <span className="flex-shrink-0 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1">
+          <CheckCircle className="w-3 h-3" />
+          Grátis
+        </span>
+      );
+    }
+    if (hasAccess) {
+      return (
+        <span className="flex-shrink-0 px-2 py-1 rounded-full bg-accent/10 text-accent-foreground text-xs font-medium flex items-center gap-1">
+          <Crown className="w-3 h-3" />
+          Incluso
+        </span>
+      );
+    }
+    return (
+      <span className="flex-shrink-0 px-2 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium flex items-center gap-1">
+        <Lock className="w-3 h-3" />
+        Premium
+      </span>
+    );
+  };
+
   return (
     <div className="p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-all">
       <div className="flex items-start justify-between gap-4 mb-3">
@@ -58,22 +112,7 @@ export function LayerCard({ name, title, abstract, userPlan = 'gratuito', onShow
           <h4 className="font-semibold text-foreground truncate">{title}</h4>
           <p className="text-xs font-mono text-muted-foreground truncate">{name}</p>
         </div>
-        {isFree ? (
-          <span className="flex-shrink-0 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium flex items-center gap-1">
-            <CheckCircle className="w-3 h-3" />
-            Grátis
-          </span>
-        ) : hasAccess ? (
-          <span className="flex-shrink-0 px-2 py-1 rounded-full bg-accent/10 text-accent-foreground text-xs font-medium flex items-center gap-1">
-            <Crown className="w-3 h-3" />
-            Incluso
-          </span>
-        ) : (
-          <span className="flex-shrink-0 px-2 py-1 rounded-full bg-muted text-muted-foreground text-xs font-medium flex items-center gap-1">
-            <Lock className="w-3 h-3" />
-            Premium
-          </span>
-        )}
+        {getBadge()}
       </div>
       
       <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
@@ -85,21 +124,25 @@ export function LayerCard({ name, title, abstract, userPlan = 'gratuito', onShow
           variant={hasAccess ? "default" : "outline"} 
           size="sm" 
           onClick={handleDownload}
-          disabled={downloading || !hasAccess}
+          disabled={downloading}
           className="flex-1"
         >
-          {downloading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : hasAccess ? (
-            <Download className="w-4 h-4 mr-2" />
-          ) : (
-            <Lock className="w-4 h-4 mr-2" />
-          )}
-          {hasAccess ? 'Baixar JSON' : 'Fazer Upgrade'}
+          {getButtonIcon()}
+          {getButtonLabel()}
         </Button>
-        <Button variant="outline" size="sm" onClick={onShowMap} className="flex-1">
-          <Map className="w-4 h-4 mr-2" />
-          Ver Mapa
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleMapClick} 
+          className="flex-1"
+          disabled={!isLoggedIn && !isFree ? false : false}
+        >
+          {!isLoggedIn && isFree ? (
+            <LogIn className="w-4 h-4 mr-2" />
+          ) : (
+            <Map className="w-4 h-4 mr-2" />
+          )}
+          {!isLoggedIn && isFree ? 'Login p/ Ver' : 'Ver Mapa'}
         </Button>
       </div>
       

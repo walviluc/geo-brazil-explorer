@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { X, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Layer } from "@/lib/wms-explorer";
+import { Layer, downloadLayerAsGeoJSON } from "@/lib/wms-explorer";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -13,6 +13,9 @@ interface MapModalProps {
 export function MapModal({ layer, onClose }: MapModalProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [featureCount, setFeatureCount] = useState(0);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -25,28 +28,107 @@ export function MapModal({ layer, onClose }: MapModalProps) {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Set initial view
-    if (layer.bbox) {
-      const bounds: L.LatLngBoundsExpression = [
-        [layer.bbox.miny, layer.bbox.minx],
-        [layer.bbox.maxy, layer.bbox.maxx]
-      ];
-      map.fitBounds(bounds);
+    // Set initial view for Brazil
+    map.setView([-14.235, -51.925], 4);
+
+    // Fetch and render GeoJSON features
+    const loadFeatures = async () => {
+      setLoading(true);
+      setError(null);
       
-      // Add bounding box rectangle
-      L.rectangle(bounds, {
-        color: '#0891b2',
-        fillColor: '#0891b2',
-        fillOpacity: 0.2,
-        weight: 2
-      }).addTo(map).bindPopup(`
-        <strong>${layer.title}</strong><br>
-        <small>${layer.name}</small><br>
-        <em>${layer.abstract.substring(0, 150)}...</em>
-      `);
-    } else {
-      map.setView([-14.235, -51.925], 4);
-    }
+      try {
+        const data = await downloadLayerAsGeoJSON(layer.name);
+        const geojson = data.geojson as GeoJSON.FeatureCollection;
+        
+        if (!geojson.features || geojson.features.length === 0) {
+          setError('Nenhuma feição encontrada para esta camada');
+          setLoading(false);
+          return;
+        }
+        
+        setFeatureCount(geojson.features.length);
+        
+        // Create GeoJSON layer with styling
+        const geoJsonLayer = L.geoJSON(geojson, {
+          style: {
+            color: '#0891b2',
+            weight: 2,
+            opacity: 0.8,
+            fillColor: '#0891b2',
+            fillOpacity: 0.3
+          },
+          pointToLayer: (feature, latlng) => {
+            return L.circleMarker(latlng, {
+              radius: 8,
+              fillColor: '#0891b2',
+              color: '#0891b2',
+              weight: 2,
+              opacity: 1,
+              fillOpacity: 0.6
+            });
+          },
+          onEachFeature: (feature, featureLayer) => {
+            // Build popup content from properties
+            const props = feature.properties;
+            if (props) {
+              let popupContent = '<div class="max-w-xs overflow-auto">';
+              popupContent += `<h4 class="font-bold text-sm mb-2">${layer.title}</h4>`;
+              popupContent += '<table class="text-xs w-full">';
+              
+              const keys = Object.keys(props).slice(0, 10); // Limit to 10 properties
+              keys.forEach(key => {
+                const value = props[key];
+                if (value !== null && value !== undefined && value !== '') {
+                  popupContent += `
+                    <tr class="border-b border-gray-200">
+                      <td class="font-medium pr-2 py-1">${key}</td>
+                      <td class="py-1">${String(value).substring(0, 100)}</td>
+                    </tr>
+                  `;
+                }
+              });
+              
+              popupContent += '</table></div>';
+              featureLayer.bindPopup(popupContent, { maxWidth: 300 });
+            }
+          }
+        }).addTo(map);
+        
+        // Fit map to features bounds
+        const bounds = geoJsonLayer.getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, { padding: [20, 20] });
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading features:', err);
+        setError(err instanceof Error ? err.message : 'Erro ao carregar feições');
+        setLoading(false);
+        
+        // Fallback: show bounding box if available
+        if (layer.bbox) {
+          const bounds: L.LatLngBoundsExpression = [
+            [layer.bbox.miny, layer.bbox.minx],
+            [layer.bbox.maxy, layer.bbox.maxx]
+          ];
+          map.fitBounds(bounds);
+          
+          L.rectangle(bounds, {
+            color: '#dc2626',
+            fillColor: '#dc2626',
+            fillOpacity: 0.1,
+            weight: 2,
+            dashArray: '5, 5'
+          }).addTo(map).bindPopup(`
+            <strong>Área aproximada</strong><br>
+            <small>Não foi possível carregar as feições</small>
+          `);
+        }
+      }
+    };
+
+    loadFeatures();
 
     return () => {
       if (mapRef.current) {
@@ -68,17 +150,47 @@ export function MapModal({ layer, onClose }: MapModalProps) {
             <h2 className="text-lg font-bold text-foreground truncate">
               {layer.title}
             </h2>
-            <p className="text-sm text-muted-foreground font-mono truncate">
-              {layer.name}
-            </p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground font-mono truncate">
+                {layer.name}
+              </p>
+              {!loading && !error && featureCount > 0 && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  {featureCount} feições
+                </span>
+              )}
+            </div>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="w-5 h-5" />
           </Button>
         </div>
         
-        {/* Map */}
-        <div ref={mapContainerRef} className="h-[500px] w-full" />
+        {/* Map Container */}
+        <div className="relative">
+          <div ref={mapContainerRef} className="h-[500px] w-full" />
+          
+          {/* Loading Overlay */}
+          {loading && (
+            <div className="absolute inset-0 bg-background/80 flex items-center justify-center">
+              <div className="text-center">
+                <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Carregando feições...</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Error Banner */}
+          {error && !loading && (
+            <div className="absolute bottom-4 left-4 right-4 bg-destructive/10 border border-destructive/20 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-destructive">Erro ao carregar feições</p>
+                <p className="text-xs text-muted-foreground">{error}</p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
