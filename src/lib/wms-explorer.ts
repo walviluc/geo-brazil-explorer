@@ -1,3 +1,5 @@
+export const WMS_BASE_URL = 'https://portalmaps.com.br/geoserver/wms';
+
 export interface Layer {
   name: string;
   title: string;
