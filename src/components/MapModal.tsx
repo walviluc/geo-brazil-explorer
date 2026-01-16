@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Loader2, AlertCircle } from "lucide-react";
+import { X, Loader2, AlertCircle, Layers, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Layer, downloadLayerAsGeoJSON } from "@/lib/wms-explorer";
+import { Layer, downloadLayerAsGeoJSON, WMS_BASE_URL } from "@/lib/wms-explorer";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -16,6 +16,10 @@ export function MapModal({ layer, onClose }: MapModalProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [featureCount, setFeatureCount] = useState(0);
+  const [showWmsLayer, setShowWmsLayer] = useState(true);
+  const [showVectorLayer, setShowVectorLayer] = useState(true);
+  const wmsLayerRef = useRef<L.TileLayer.WMS | null>(null);
+  const vectorLayerRef = useRef<L.GeoJSON | null>(null);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
@@ -23,13 +27,33 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     const map = L.map(mapContainerRef.current);
     mapRef.current = map;
 
-    // Add OpenStreetMap tiles
+    // Add OpenStreetMap tiles as base layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
     // Set initial view for Brazil
     map.setView([-14.235, -51.925], 4);
+
+    // Add WMS tile layer for raster visualization
+    const wmsLayer = L.tileLayer.wms(WMS_BASE_URL, {
+      layers: layer.name,
+      format: 'image/png',
+      transparent: true,
+      version: '1.1.1',
+      attribution: '© PortalMaps',
+      opacity: 0.7
+    }).addTo(map);
+    wmsLayerRef.current = wmsLayer;
+
+    // Fit to layer bounds if available
+    if (layer.bbox) {
+      const bounds: L.LatLngBoundsExpression = [
+        [layer.bbox.miny, layer.bbox.minx],
+        [layer.bbox.maxy, layer.bbox.maxx]
+      ];
+      map.fitBounds(bounds, { padding: [20, 20] });
+    }
 
     // Fetch and render GeoJSON features
     const loadFeatures = async () => {
@@ -93,8 +117,9 @@ export function MapModal({ layer, onClose }: MapModalProps) {
             }
           }
         }).addTo(map);
+        vectorLayerRef.current = geoJsonLayer;
         
-        // Fit map to features bounds
+        // Fit map to features bounds (overrides WMS bounds for better precision)
         const bounds = geoJsonLayer.getBounds();
         if (bounds.isValid()) {
           map.fitBounds(bounds, { padding: [20, 20] });
@@ -135,8 +160,32 @@ export function MapModal({ layer, onClose }: MapModalProps) {
         mapRef.current.remove();
         mapRef.current = null;
       }
+      wmsLayerRef.current = null;
+      vectorLayerRef.current = null;
     };
   }, [layer]);
+
+  // Toggle WMS layer visibility
+  useEffect(() => {
+    if (wmsLayerRef.current && mapRef.current) {
+      if (showWmsLayer) {
+        wmsLayerRef.current.addTo(mapRef.current);
+      } else {
+        wmsLayerRef.current.remove();
+      }
+    }
+  }, [showWmsLayer]);
+
+  // Toggle Vector layer visibility
+  useEffect(() => {
+    if (vectorLayerRef.current && mapRef.current) {
+      if (showVectorLayer) {
+        vectorLayerRef.current.addTo(mapRef.current);
+      } else {
+        vectorLayerRef.current.remove();
+      }
+    }
+  }, [showVectorLayer]);
 
   return (
     <div 
@@ -169,6 +218,32 @@ export function MapModal({ layer, onClose }: MapModalProps) {
         {/* Map Container */}
         <div className="relative">
           <div ref={mapContainerRef} className="h-[500px] w-full" />
+          
+          {/* Layer Controls */}
+          <div className="absolute top-4 right-4 z-[1000] bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border border-border p-2 space-y-1">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground px-2 pb-1 border-b border-border">
+              <Layers className="w-3 h-3" />
+              <span>Camadas</span>
+            </div>
+            <button
+              onClick={() => setShowWmsLayer(!showWmsLayer)}
+              className={`flex items-center gap-2 w-full px-2 py-1.5 rounded text-sm transition-colors ${
+                showWmsLayer ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {showWmsLayer ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              <span>WMS Raster</span>
+            </button>
+            <button
+              onClick={() => setShowVectorLayer(!showVectorLayer)}
+              className={`flex items-center gap-2 w-full px-2 py-1.5 rounded text-sm transition-colors ${
+                showVectorLayer ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
+              }`}
+            >
+              {showVectorLayer ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+              <span>Vetorial</span>
+            </button>
+          </div>
           
           {/* Loading Overlay */}
           {loading && (
