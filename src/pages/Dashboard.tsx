@@ -89,7 +89,7 @@ export default function Dashboard() {
           </p>
         </div>
         
-        <Explorer userPlan={currentPlan} />
+        <Explorer userPlan={currentPlan as 'gratuito' | 'profissional' | 'completo'} />
       </main>
     </div>
   );

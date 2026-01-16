@@ -8,10 +8,10 @@ import { StateModal } from "./StateModal";
 import { MapModal } from "./MapModal";
 
 interface ExplorerProps {
-  userPlan?: 'gratuito' | 'profissional' | 'completo';
+  userPlan: 'gratuito' | 'profissional' | 'completo' | null;
 }
 
-export function Explorer({ userPlan = 'gratuito' }: ExplorerProps) {
+export function Explorer({ userPlan }: ExplorerProps) {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [filteredLayers, setFilteredLayers] = useState<Layer[]>([]);
   const [loading, setLoading] = useState(false);
