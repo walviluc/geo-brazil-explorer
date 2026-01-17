@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, LogOut, User, Crown, CreditCard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
-import { Explorer } from '@/components/Explorer';
+import { DashboardExplorer } from '@/components/DashboardExplorer';
 
 const planLabels: Record<string, { label: string; color: string; icon: typeof Crown }> = {
   gratuito: { label: 'Plano Gratuito', color: 'bg-muted text-muted-foreground', icon: User },
@@ -89,7 +89,7 @@ export default function Dashboard() {
           </p>
         </div>
         
-        <Explorer userPlan={currentPlan as 'gratuito' | 'profissional' | 'completo'} />
+        <DashboardExplorer userPlan={currentPlan as 'gratuito' | 'profissional' | 'completo'} />
       </main>
     </div>
   );
