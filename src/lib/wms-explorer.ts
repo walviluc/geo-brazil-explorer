@@ -148,29 +148,40 @@ export async function fetchLayers(): Promise<Layer[]> {
   return layers;
 }
 
-export async function downloadLayerAsGeoJSON(layerName: string): Promise<{
+export const FEATURES_PER_PAGE = 100;
+
+export async function downloadLayerAsGeoJSON(
+  layerName: string, 
+  startIndex: number = 0, 
+  maxFeatures: number = FEATURES_PER_PAGE
+): Promise<{
   metadata: {
     source: string;
     layer: string;
     downloadedAt: string;
     totalFeatures: number;
+    startIndex: number;
+    hasMore: boolean;
   };
-  geojson: unknown;
+  geojson: GeoJSON.FeatureCollection;
 }> {
-  const url = `${BASE_URL}?service=WFS&version=2.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=EPSG:4326&maxFeatures=1000`;
+  const url = `${BASE_URL}?service=WFS&version=2.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=EPSG:4326&startIndex=${startIndex}&count=${maxFeatures}`;
   
   const response = await fetchWithProxy(url, {
     headers: { 'Accept': 'application/json, application/geo+json, */*' }
   });
   
-  const geoJSON = await response.json();
+  const geoJSON = await response.json() as GeoJSON.FeatureCollection;
+  const featuresCount = geoJSON.features?.length || 0;
   
   return {
     metadata: {
       source: 'GeoData Brasil - Portal Maps WMS/WFS',
       layer: layerName,
       downloadedAt: new Date().toISOString(),
-      totalFeatures: geoJSON.features?.length || 0
+      totalFeatures: featuresCount,
+      startIndex,
+      hasMore: featuresCount >= maxFeatures
     },
     geojson: geoJSON
   };
