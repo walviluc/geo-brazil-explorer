@@ -57,8 +57,11 @@ export function Header() {
                   {planLabels[currentPlan]}
                 </div>
                 <Button variant="ghost" className="text-secondary-foreground" onClick={() => navigate('/dashboard')}>
-                  <User className="w-4 h-4 mr-2" />
                   Dashboard
+                </Button>
+                <Button variant="ghost" className="text-secondary-foreground" onClick={() => navigate('/profile')}>
+                  <User className="w-4 h-4 mr-2" />
+                  Perfil
                 </Button>
                 <Button variant="outline" onClick={handleSignOut}>
                   <LogOut className="w-4 h-4 mr-2" />
@@ -107,8 +110,11 @@ export function Header() {
                       {planLabels[currentPlan]}
                     </div>
                     <Button variant="ghost" className="w-full justify-start text-secondary-foreground" onClick={() => { navigate('/dashboard'); setMobileMenuOpen(false); }}>
-                      <User className="w-4 h-4 mr-2" />
                       Dashboard
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-secondary-foreground" onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }}>
+                      <User className="w-4 h-4 mr-2" />
+                      Perfil
                     </Button>
                     <Button variant="outline" className="w-full" onClick={handleSignOut}>
                       <LogOut className="w-4 h-4 mr-2" />
