@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowLeft, Check, Star, Crown } from 'lucide-react';
+import { MapPin, ArrowLeft, Check, Star, Crown, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, PlanType, BillingCycle } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+// Public Key do Mercado Pago (pode ficar no código)
+const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-5cb242c6-612e-49cf-bc1d-8ede24066966';
 
 const plans: {
   id: PlanType;
@@ -69,9 +73,37 @@ export default function Subscription() {
   const { user, loading: authLoading } = useAuth();
   const { subscription, loading: subLoading, updateSubscription } = useSubscription();
   const [isYearly, setIsYearly] = useState(false);
-  const [updating, setUpdating] = useState(false);
+  const [processingPlan, setProcessingPlan] = useState<PlanType | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+
+  // Handle payment return status
+  useEffect(() => {
+    const status = searchParams.get('status');
+    const planId = searchParams.get('plan') as PlanType | null;
+    const cycle = searchParams.get('cycle') as BillingCycle | null;
+
+    if (status === 'success' && planId && cycle) {
+      toast({
+        title: 'Pagamento realizado!',
+        description: `Seu plano ${plans.find(p => p.id === planId)?.name} foi ativado com sucesso.`,
+      });
+      // Refresh subscription data
+      window.location.href = '/subscription';
+    } else if (status === 'failure') {
+      toast({
+        variant: 'destructive',
+        title: 'Pagamento não aprovado',
+        description: 'O pagamento não foi processado. Tente novamente.',
+      });
+    } else if (status === 'pending') {
+      toast({
+        title: 'Pagamento pendente',
+        description: 'Seu pagamento está sendo processado. Aguarde a confirmação.',
+      });
+    }
+  }, [searchParams, toast]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -94,25 +126,57 @@ export default function Subscription() {
   const handleSelectPlan = async (planId: PlanType) => {
     if (planId === currentPlan) return;
     
-    setUpdating(true);
-    
-    const billingCycle: BillingCycle = isYearly ? 'yearly' : 'monthly';
-    const { error } = await updateSubscription(planId, billingCycle);
-    
-    if (error) {
+    // If downgrading to free plan, just update directly
+    if (planId === 'gratuito') {
+      setProcessingPlan(planId);
+      const billingCycle: BillingCycle = isYearly ? 'yearly' : 'monthly';
+      const { error } = await updateSubscription(planId, billingCycle);
+      
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Erro ao atualizar plano',
+          description: error.message
+        });
+      } else {
+        toast({
+          title: 'Plano atualizado!',
+          description: 'Você agora está no plano Gratuito'
+        });
+      }
+      setProcessingPlan(null);
+      return;
+    }
+
+    // For paid plans, create Mercado Pago checkout
+    setProcessingPlan(planId);
+
+    try {
+      const billingCycle: BillingCycle = isYearly ? 'yearly' : 'monthly';
+      
+      const { data, error } = await supabase.functions.invoke('mercadopago-checkout', {
+        body: { planId, billingCycle }
+      });
+
+      if (error) {
+        throw new Error(error.message || 'Erro ao criar checkout');
+      }
+
+      if (data?.initPoint) {
+        // Redirect to Mercado Pago checkout
+        window.location.href = data.initPoint;
+      } else {
+        throw new Error('URL de checkout não recebida');
+      }
+    } catch (error: any) {
+      console.error('Checkout error:', error);
       toast({
         variant: 'destructive',
-        title: 'Erro ao atualizar plano',
-        description: error.message
+        title: 'Erro ao processar pagamento',
+        description: error.message || 'Tente novamente mais tarde'
       });
-    } else {
-      toast({
-        title: 'Plano atualizado!',
-        description: `Você agora está no plano ${plans.find(p => p.id === planId)?.name}`
-      });
+      setProcessingPlan(null);
     }
-    
-    setUpdating(false);
   };
 
   return (
@@ -230,24 +294,34 @@ export default function Subscription() {
                 className="w-full" 
                 variant={plan.id === currentPlan ? 'secondary' : plan.popular ? 'default' : 'outline'}
                 size="lg"
-                disabled={plan.id === currentPlan || updating}
+                disabled={plan.id === currentPlan || processingPlan !== null}
                 onClick={() => handleSelectPlan(plan.id)}
               >
-                {plan.id === currentPlan 
-                  ? 'Plano Atual' 
-                  : updating 
-                    ? 'Processando...'
-                    : plan.monthlyPrice === 0 
-                      ? 'Mudar para Gratuito' 
-                      : `Assinar ${plan.name}`}
+                {plan.id === currentPlan ? (
+                  'Plano Atual'
+                ) : processingPlan === plan.id ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processando...
+                  </>
+                ) : plan.monthlyPrice === 0 ? (
+                  'Mudar para Gratuito'
+                ) : (
+                  `Assinar ${plan.name}`
+                )}
               </Button>
             </div>
           ))}
         </div>
         
-        <p className="text-center text-sm text-muted-foreground mt-12">
-          Nota: A integração com pagamentos será implementada em breve. Por enquanto, a mudança de plano é simulada.
-        </p>
+        <div className="text-center mt-12 space-y-2">
+          <p className="text-sm text-muted-foreground">
+            Pagamento seguro processado pelo Mercado Pago
+          </p>
+          <p className="text-xs text-muted-foreground/70">
+            Você pode cancelar sua assinatura a qualquer momento
+          </p>
+        </div>
       </main>
     </div>
   );
