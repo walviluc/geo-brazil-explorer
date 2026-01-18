@@ -1,66 +1,47 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Check, Star } from "lucide-react";
+import { Check, Star, Crown } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 
 const plans = [
   {
     name: "Gratuito",
-    description: "Perfeito para conhecer a plataforma",
+    description: "Acesso básico aos dados geoespaciais públicos",
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: [
-      "Acesso a Unidades de Conservação Federal",
-      "Acesso a CAR Uso Restrito",
-      "Visualização no mapa",
+      "Acesso a dados do IBGE",
+      "Acesso a dados do INPE",
+      "Visualização no mapa interativo",
       "Download em GeoJSON",
-      "Busca por estado",
+      "Busca por tema e instituição",
     ],
     excluded: [
-      "Camadas premium",
-      "Atualizações prioritárias",
-      "Suporte dedicado"
+      "Acesso a todas instituições",
+      "Download ilimitado",
+      "Suporte prioritário"
     ],
     cta: "Começar Grátis",
     popular: false
   },
   {
-    name: "Profissional",
-    description: "Para profissionais e pequenas equipes",
-    monthlyPrice: 29.90,
-    yearlyPrice: 20,
-    features: [
-      "Tudo do plano Gratuito",
-      "Acesso a 50+ camadas adicionais",
-      "Territórios Indígenas",
-      "Áreas de Proteção Ambiental",
-      "Download ilimitado",
-      "Suporte por email"
-    ],
-    excluded: [
-      "Todas as camadas disponíveis"
-    ],
-    cta: "Assinar Profissional",
-    popular: true
-  },
-  {
     name: "Completo",
-    description: "Acesso total para empresas e pesquisadores",
-    monthlyPrice: 60,
-    yearlyPrice: 45,
+    description: "Acesso total a todos os dados da INDE",
+    monthlyPrice: 49.90,
+    yearlyPrice: 39.90,
     features: [
-      "Acesso a TODAS as camadas",
+      "Acesso a TODAS as instituições",
+      "Dados de ANA, ICMBio, FUNAI, INCRA",
+      "Dados de IBAMA, ANM, EMBRAPA",
+      "Download ilimitado",
       "Atualizações em tempo real",
-      "API de integração",
-      "Suporte prioritário 24/7",
-      "Dados históricos",
-      "Exportação em múltiplos formatos",
-      "Dashboard personalizado"
+      "Suporte prioritário",
+      "Exportação em múltiplos formatos"
     ],
     excluded: [],
     cta: "Assinar Completo",
-    popular: false
+    popular: true
   }
 ];
 
@@ -85,7 +66,7 @@ export function Pricing() {
             Planos de Acesso
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Escolha o plano ideal para suas necessidades de dados geoespaciais
+            Escolha o plano ideal para acessar os dados geoespaciais da INDE
           </p>
           
           {/* Toggle */}
@@ -104,12 +85,12 @@ export function Pricing() {
                 isYearly ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Anual <span className="text-xs opacity-80">(até 25% off)</span>
+              Anual <span className="text-xs opacity-80">(20% off)</span>
             </button>
           </div>
         </div>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           {plans.map((plan, index) => (
             <div 
               key={index}
@@ -122,14 +103,17 @@ export function Pricing() {
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1">
                   <Star className="w-4 h-4" />
-                  Mais Popular
+                  Recomendado
                 </div>
               )}
               
               <div className="text-center mb-6">
-                <h3 className={`text-2xl font-bold mb-2 ${plan.popular ? 'text-secondary-foreground' : 'text-foreground'}`}>
-                  {plan.name}
-                </h3>
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  {plan.popular && <Crown className="w-6 h-6 text-primary" />}
+                  <h3 className={`text-2xl font-bold ${plan.popular ? 'text-secondary-foreground' : 'text-foreground'}`}>
+                    {plan.name}
+                  </h3>
+                </div>
                 <p className={`text-sm ${plan.popular ? 'text-secondary-foreground/70' : 'text-muted-foreground'}`}>
                   {plan.description}
                 </p>
