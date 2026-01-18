@@ -1,46 +1,35 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Database, Layers, RefreshCw, Building2, FolderOpen } from "lucide-react";
-import { 
-  fetchINDECatalog, 
-  groupServicesByTheme, 
-  groupServicesByInstitution,
-  INDEGeoService,
-  PlanType,
-  isServiceFree,
-  canAccessService,
-  INDE_THEMES,
-  INSTITUTIONS
-} from "@/lib/inde-api";
-import { ServiceCard } from "./ServiceCard";
-import { ServiceModal } from "./ServiceModal";
+import { Loader2, Search, Database, Layers, RefreshCw } from "lucide-react";
+import { fetchLayers, groupLayersByState, Layer, UF_NAMES, PlanType } from "@/lib/wms-explorer";
+import { StateCard } from "./StateCard";
+import { StateModal } from "./StateModal";
+import { MapModal } from "./MapModal";
 
 interface DashboardExplorerProps {
-  userPlan: 'gratuito' | 'completo';
+  userPlan: 'gratuito' | 'profissional' | 'completo';
 }
 
-type GroupBy = 'theme' | 'institution';
-
 export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
-  const [services, setServices] = useState<INDEGeoService[]>([]);
-  const [filteredServices, setFilteredServices] = useState<INDEGeoService[]>([]);
+  const [layers, setLayers] = useState<Layer[]>([]);
+  const [filteredLayers, setFilteredLayers] = useState<Layer[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [groupBy, setGroupBy] = useState<GroupBy>('institution');
-  const [selectedGroup, setSelectedGroup] = useState<{ key: string; services: INDEGeoService[] } | null>(null);
+  const [selectedState, setSelectedState] = useState<{ uf: string; layers: Layer[] } | null>(null);
+  const [mapLayer, setMapLayer] = useState<Layer | null>(null);
 
-  const loadServices = async () => {
+  const loadLayers = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const data = await fetchINDECatalog();
-      setServices(data);
-      setFilteredServices(data);
+      const data = await fetchLayers();
+      setLayers(data);
+      setFilteredLayers(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao carregar dados da INDE');
+      setError(err instanceof Error ? err.message : 'Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
@@ -48,92 +37,71 @@ export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
 
   useEffect(() => {
     const term = searchTerm.toLowerCase();
-    const filtered = services.filter(s => 
-      [s.nome, s.descricao, s.instituicao, s.tema].some(v => v?.toLowerCase().includes(term))
+    const filtered = layers.filter(l => 
+      [l.name, l.title, l.abstract].some(v => v?.toLowerCase().includes(term))
     );
-    setFilteredServices(filtered);
-  }, [searchTerm, services]);
+    setFilteredLayers(filtered);
+  }, [searchTerm, layers]);
 
-  const groups = groupBy === 'theme' 
-    ? groupServicesByTheme(filteredServices)
-    : groupServicesByInstitution(filteredServices);
-  
-  const orderedKeys = [...groups.keys()].sort();
+  const groups = groupLayersByState(filteredLayers);
+  const orderedStates = [...groups.keys()]
+    .filter(k => k !== 'OUTROS' && UF_NAMES[k])
+    .sort()
+    .concat(groups.has('OUTROS') ? ['OUTROS'] : []);
 
   return (
     <section className="py-8">
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-          Catálogo INDE
+          Dados Geoespaciais
         </h2>
         <p className="text-muted-foreground">
-          Explore os geoserviços da Infraestrutura Nacional de Dados Espaciais
+          Selecione um estado para visualizar e baixar as camadas disponíveis
         </p>
       </div>
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
         <Button 
-          onClick={loadServices} 
+          onClick={loadLayers} 
           disabled={loading}
           size="lg"
           className="min-w-[200px]"
         >
           {loading ? (
             <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-          ) : services.length > 0 ? (
+          ) : layers.length > 0 ? (
             <RefreshCw className="w-5 h-5 mr-2" />
           ) : (
             <Database className="w-5 h-5 mr-2" />
           )}
-          {loading ? 'Carregando...' : services.length > 0 ? 'Atualizar Catálogo' : 'Carregar Catálogo'}
+          {loading ? 'Carregando...' : layers.length > 0 ? 'Atualizar Dados' : 'Carregar Camadas'}
         </Button>
         
-        {services.length > 0 && (
-          <>
-            <div className="relative max-w-md w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Buscar serviços..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12"
-              />
-            </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant={groupBy === 'institution' ? 'default' : 'outline'}
-                size="lg"
-                onClick={() => setGroupBy('institution')}
-              >
-                <Building2 className="w-4 h-4 mr-2" />
-                Instituição
-              </Button>
-              <Button
-                variant={groupBy === 'theme' ? 'default' : 'outline'}
-                size="lg"
-                onClick={() => setGroupBy('theme')}
-              >
-                <FolderOpen className="w-4 h-4 mr-2" />
-                Tema
-              </Button>
-            </div>
-          </>
+        {layers.length > 0 && (
+          <div className="relative max-w-md w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Buscar camadas..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 h-12"
+            />
+          </div>
         )}
       </div>
 
       {/* Stats */}
-      {services.length > 0 && (
+      {layers.length > 0 && (
         <div className="flex justify-center gap-8 mb-8">
           <div className="flex items-center gap-2 text-muted-foreground">
             <Database className="w-5 h-5" />
-            <span><strong className="text-foreground">{services.length}</strong> serviços</span>
+            <span><strong className="text-foreground">{layers.length}</strong> total</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Layers className="w-5 h-5" />
-            <span><strong className="text-foreground">{filteredServices.length}</strong> filtrados</span>
+            <span><strong className="text-foreground">{filteredLayers.length}</strong> filtradas</span>
           </div>
         </div>
       )}
@@ -148,26 +116,19 @@ export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
         </div>
       )}
 
-      {/* Groups Grid */}
-      {services.length > 0 && (
+      {/* States Grid */}
+      {layers.length > 0 && (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {orderedKeys.map(key => {
-            const groupServices = groups.get(key) || [];
-            if (groupServices.length === 0) return null;
-            
-            const isFree = groupBy === 'institution' && isServiceFree(key);
-            const hasAccess = groupBy === 'institution' && canAccessService(key, userPlan);
+          {orderedStates.map(uf => {
+            const stateLayers = groups.get(uf) || [];
+            if (stateLayers.length === 0) return null;
             
             return (
-              <ServiceCard
-                key={key}
-                name={key}
-                fullName={groupBy === 'institution' ? INSTITUTIONS[key] || key : INDE_THEMES[key] || key}
-                serviceCount={groupServices.length}
-                isFree={isFree}
-                hasAccess={hasAccess}
-                groupBy={groupBy}
-                onClick={() => setSelectedGroup({ key, services: groupServices })}
+              <StateCard
+                key={uf}
+                uf={uf}
+                layerCount={stateLayers.length}
+                onClick={() => setSelectedState({ uf, layers: stateLayers })}
               />
             );
           })}
@@ -175,7 +136,7 @@ export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
       )}
 
       {/* Empty State */}
-      {!loading && services.length === 0 && !error && (
+      {!loading && layers.length === 0 && !error && (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center">
             <Database className="w-8 h-8 text-muted-foreground" />
@@ -184,19 +145,30 @@ export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
             Pronto para explorar?
           </h3>
           <p className="text-muted-foreground mb-4">
-            Clique no botão acima para carregar o catálogo de geoserviços da INDE
+            Clique no botão acima para carregar as camadas de dados geoespaciais
           </p>
         </div>
       )}
 
-      {/* Service Modal */}
-      {selectedGroup && (
-        <ServiceModal
-          groupName={selectedGroup.key}
-          services={selectedGroup.services}
+      {/* State Modal */}
+      {selectedState && (
+        <StateModal
+          uf={selectedState.uf}
+          layers={selectedState.layers}
           userPlan={userPlan}
-          groupBy={groupBy}
-          onClose={() => setSelectedGroup(null)}
+          onClose={() => setSelectedState(null)}
+          onShowMap={(layer) => {
+            setMapLayer(layer);
+            setSelectedState(null);
+          }}
+        />
+      )}
+
+      {/* Map Modal */}
+      {mapLayer && (
+        <MapModal
+          layer={mapLayer}
+          onClose={() => setMapLayer(null)}
         />
       )}
     </section>

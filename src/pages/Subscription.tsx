@@ -7,6 +7,9 @@ import { useSubscription, PlanType, BillingCycle } from '@/hooks/useSubscription
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
+// Public Key do Mercado Pago (pode ficar no código)
+const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-5cb242c6-612e-49cf-bc1d-8ede24066966';
+
 const plans: {
   id: PlanType;
   name: string;
@@ -19,34 +22,50 @@ const plans: {
   {
     id: 'gratuito',
     name: 'Gratuito',
-    description: 'Acesso básico aos dados geoespaciais públicos',
+    description: 'Perfeito para conhecer a plataforma',
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: [
-      'Acesso a dados do IBGE',
-      'Acesso a dados do INPE',
-      'Visualização no mapa interativo',
+      'Acesso a Unidades de Conservação Federal',
+      'Acesso a CAR Uso Restrito',
+      'Visualização no mapa',
       'Download em GeoJSON',
-      'Busca por tema e instituição'
+      'Busca por estado'
     ],
     popular: false
   },
   {
-    id: 'completo',
-    name: 'Completo',
-    description: 'Acesso total a todos os dados da INDE',
-    monthlyPrice: 49.90,
-    yearlyPrice: 39.90,
+    id: 'profissional',
+    name: 'Profissional',
+    description: 'Para profissionais e pequenas equipes',
+    monthlyPrice: 29.90,
+    yearlyPrice: 20,
     features: [
-      'Acesso a TODAS as instituições',
-      'Dados de ANA, ICMBio, FUNAI, INCRA',
-      'Dados de IBAMA, ANM, EMBRAPA',
+      'Tudo do plano Gratuito',
+      'Acesso a 50+ camadas adicionais',
+      'Territórios Indígenas',
+      'Áreas de Proteção Ambiental',
       'Download ilimitado',
-      'Atualizações em tempo real',
-      'Suporte prioritário',
-      'Exportação em múltiplos formatos'
+      'Suporte por email'
     ],
     popular: true
+  },
+  {
+    id: 'completo',
+    name: 'Completo',
+    description: 'Acesso total para empresas e pesquisadores',
+    monthlyPrice: 60,
+    yearlyPrice: 45,
+    features: [
+      'Acesso a TODAS as camadas',
+      'Atualizações em tempo real',
+      'API de integração',
+      'Suporte prioritário 24/7',
+      'Dados históricos',
+      'Exportação em múltiplos formatos',
+      'Dashboard personalizado'
+    ],
+    popular: false
   }
 ];
 
@@ -70,6 +89,7 @@ export default function Subscription() {
         title: 'Pagamento realizado!',
         description: `Seu plano ${plans.find(p => p.id === planId)?.name} foi ativado com sucesso.`,
       });
+      // Refresh subscription data
       window.location.href = '/subscription';
     } else if (status === 'failure') {
       toast({
@@ -128,7 +148,7 @@ export default function Subscription() {
       return;
     }
 
-    // For paid plan, create Mercado Pago checkout
+    // For paid plans, create Mercado Pago checkout
     setProcessingPlan(planId);
 
     try {
@@ -143,6 +163,7 @@ export default function Subscription() {
       }
 
       if (data?.initPoint) {
+        // Redirect to Mercado Pago checkout
         window.location.href = data.initPoint;
       } else {
         throw new Error('URL de checkout não recebida');
@@ -203,12 +224,12 @@ export default function Subscription() {
                 isYearly ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              Anual <span className="text-xs opacity-80">(20% off)</span>
+              Anual <span className="text-xs opacity-80">(até 25% off)</span>
             </button>
           </div>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {plans.map((plan) => (
             <div 
               key={plan.id}
@@ -223,7 +244,7 @@ export default function Subscription() {
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1">
                   <Star className="w-4 h-4" />
-                  Recomendado
+                  Mais Popular
                 </div>
               )}
               
