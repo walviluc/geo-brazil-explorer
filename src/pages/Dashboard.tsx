@@ -8,8 +8,7 @@ import { DashboardExplorer } from '@/components/DashboardExplorer';
 
 const planLabels: Record<string, { label: string; color: string; icon: typeof Crown }> = {
   gratuito: { label: 'Plano Gratuito', color: 'bg-muted text-muted-foreground', icon: User },
-  profissional: { label: 'Plano Profissional', color: 'bg-primary/20 text-primary', icon: Crown },
-  completo: { label: 'Plano Completo', color: 'bg-accent/20 text-accent-foreground', icon: Crown }
+  completo: { label: 'Plano Completo', color: 'bg-primary/20 text-primary', icon: Crown }
 };
 
 export default function Dashboard() {
@@ -34,7 +33,7 @@ export default function Dashboard() {
   if (!user) return null;
 
   const currentPlan = subscription?.plan || 'gratuito';
-  const planInfo = planLabels[currentPlan];
+  const planInfo = planLabels[currentPlan] || planLabels.gratuito;
   const PlanIcon = planInfo.icon;
 
   const handleSignOut = async () => {
@@ -85,11 +84,11 @@ export default function Dashboard() {
             Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}!
           </h1>
           <p className="text-muted-foreground">
-            Explore os dados geoespaciais disponíveis no seu plano.
+            Explore os dados geoespaciais da INDE disponíveis no seu plano.
           </p>
         </div>
         
-        <DashboardExplorer userPlan={currentPlan as 'gratuito' | 'profissional' | 'completo'} />
+        <DashboardExplorer userPlan={currentPlan as 'gratuito' | 'completo'} />
       </main>
     </div>
   );

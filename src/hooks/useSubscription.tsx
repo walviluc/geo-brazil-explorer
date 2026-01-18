@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type PlanType = 'gratuito' | 'profissional' | 'completo';
+export type PlanType = 'gratuito' | 'completo';
 export type BillingCycle = 'monthly' | 'yearly';
 
 interface Subscription {
