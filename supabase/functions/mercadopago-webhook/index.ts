@@ -5,8 +5,10 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Planos válidos no sistema
+const VALID_PLANS = ['gratuito', 'completo'];
+
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -26,15 +28,11 @@ Deno.serve(async (req) => {
     const body = await req.json();
     console.log('Webhook received:', JSON.stringify(body));
 
-    // Mercado Pago sends different types of notifications
     if (body.type === 'payment' && body.data?.id) {
       const paymentId = body.data.id;
       
-      // Get payment details from Mercado Pago
       const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
+        headers: { 'Authorization': `Bearer ${accessToken}` },
       });
 
       if (!paymentResponse.ok) {
@@ -46,9 +44,7 @@ Deno.serve(async (req) => {
       const payment = await paymentResponse.json();
       console.log('Payment details:', JSON.stringify(payment));
 
-      // Check if payment was approved
       if (payment.status === 'approved') {
-        // Parse external reference
         let externalRef;
         try {
           externalRef = JSON.parse(payment.external_reference);
@@ -59,9 +55,14 @@ Deno.serve(async (req) => {
 
         const { userId, planId, billingCycle } = externalRef;
         
+        // Validar plano
+        if (!VALID_PLANS.includes(planId)) {
+          console.error('Invalid plan:', planId);
+          throw new Error('Plano inválido');
+        }
+        
         console.log('Updating subscription for user:', userId, 'plan:', planId, 'cycle:', billingCycle);
 
-        // Calculate expiration date
         const expiresAt = new Date();
         if (billingCycle === 'monthly') {
           expiresAt.setMonth(expiresAt.getMonth() + 1);
@@ -69,7 +70,6 @@ Deno.serve(async (req) => {
           expiresAt.setFullYear(expiresAt.getFullYear() + 1);
         }
 
-        // Update subscription in database
         const { error: updateError } = await supabase
           .from('subscriptions')
           .update({
@@ -86,29 +86,21 @@ Deno.serve(async (req) => {
           throw new Error('Erro ao atualizar assinatura');
         }
 
-        console.log('Subscription updated successfully');
+        console.log('Subscription updated successfully for plan:', planId);
       }
     }
 
     return new Response(
       JSON.stringify({ received: true }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
 
   } catch (error: unknown) {
     console.error('Webhook error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    // Always return 200 to acknowledge receipt, even on error
-    // This prevents Mercado Pago from retrying indefinitely
     return new Response(
       JSON.stringify({ received: true, error: errorMessage }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
     );
   }
 });
