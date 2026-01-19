@@ -1,14 +1,21 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin } from "lucide-react";
+import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layer, downloadLayerAsGeoJSON, WMS_BASE_URL, FEATURES_PER_PAGE } from "@/lib/wms-explorer";
 import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
 interface MapModalProps {
   layer: Layer;
   onClose: () => void;
+}
+
+interface OverlappingFeature {
+  feature: GeoJSON.Feature;
+  layer: L.Layer;
+  id: string;
 }
 
 // Custom popup styles
@@ -63,6 +70,26 @@ function formatPropertyValue(value: unknown): string {
     return str.substring(0, 77) + '...';
   }
   return str;
+}
+
+function getFeatureId(feature: GeoJSON.Feature, index: number): string {
+  const props = feature.properties;
+  if (!props) return `feature-${index}`;
+  
+  // Try common ID fields
+  const idFields = ['id', 'ID', 'cod_imovel', 'COD_IMOVEL', 'nome', 'NOME', 'name', 'NAME', 'gid', 'GID', 'fid', 'FID'];
+  for (const field of idFields) {
+    if (props[field] !== undefined && props[field] !== null) {
+      return String(props[field]);
+    }
+  }
+  
+  // Use first non-geometry property
+  const firstProp = Object.entries(props).find(([key]) => 
+    !key.toLowerCase().includes('geom') && !key.toLowerCase().includes('geometry')
+  );
+  
+  return firstProp ? String(firstProp[1]).substring(0, 50) : `feature-${index}`;
 }
 
 function createPopupContent(props: Record<string, unknown>, title: string): string {
@@ -121,9 +148,13 @@ export function MapModal({ layer, onClose }: MapModalProps) {
   const [loadProgress, setLoadProgress] = useState(0);
   const [showWmsLayer, setShowWmsLayer] = useState(true);
   const [showVectorLayer, setShowVectorLayer] = useState(true);
+  const [overlappingFeatures, setOverlappingFeatures] = useState<OverlappingFeature[]>([]);
+  const [selectedFeature, setSelectedFeature] = useState<OverlappingFeature | null>(null);
+  const [highlightedLayer, setHighlightedLayer] = useState<L.Layer | null>(null);
   const wmsLayerRef = useRef<L.TileLayer.WMS | null>(null);
   const vectorLayerRef = useRef<L.GeoJSON | null>(null);
   const allFeaturesRef = useRef<GeoJSON.Feature[]>([]);
+  const featureLayersMapRef = useRef<Map<GeoJSON.Feature, L.Layer>>(new Map());
 
   // Inject custom popup styles
   useEffect(() => {
@@ -135,6 +166,133 @@ export function MapModal({ layer, onClose }: MapModalProps) {
       document.head.appendChild(style);
     }
   }, []);
+
+  const highlightFeature = useCallback((featureLayer: L.Layer) => {
+    // Reset previous highlight
+    if (highlightedLayer && highlightedLayer !== featureLayer) {
+      if ('setStyle' in highlightedLayer) {
+        (highlightedLayer as L.Path).setStyle({
+          color: '#0891b2',
+          weight: 2,
+          opacity: 0.8,
+          fillColor: '#0891b2',
+          fillOpacity: 0.3
+        });
+      }
+    }
+
+    // Apply highlight style
+    if ('setStyle' in featureLayer) {
+      (featureLayer as L.Path).setStyle({
+        color: '#dc2626',
+        weight: 4,
+        opacity: 1,
+        fillColor: '#dc2626',
+        fillOpacity: 0.5
+      });
+    }
+
+    setHighlightedLayer(featureLayer);
+  }, [highlightedLayer]);
+
+  const zoomToFeature = useCallback((feature: GeoJSON.Feature, featureLayer: L.Layer) => {
+    if (!mapRef.current) return;
+
+    highlightFeature(featureLayer);
+
+    // Get bounds of the feature
+    if ('getBounds' in featureLayer) {
+      const bounds = (featureLayer as L.Polygon).getBounds();
+      mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+    } else if ('getLatLng' in featureLayer) {
+      const latlng = (featureLayer as L.Marker).getLatLng();
+      mapRef.current.setView(latlng, 15);
+    }
+
+    // Show popup with feature details
+    if (feature.properties) {
+      const popupContent = createPopupContent(feature.properties, layer.title);
+      if ('getBounds' in featureLayer) {
+        const bounds = (featureLayer as L.Polygon).getBounds();
+        L.popup({ className: 'custom-popup', maxWidth: 350 })
+          .setLatLng(bounds.getCenter())
+          .setContent(popupContent)
+          .openOn(mapRef.current);
+      } else if ('getLatLng' in featureLayer) {
+        const latlng = (featureLayer as L.Marker).getLatLng();
+        L.popup({ className: 'custom-popup', maxWidth: 350 })
+          .setLatLng(latlng)
+          .setContent(popupContent)
+          .openOn(mapRef.current);
+      }
+    }
+
+    // Close overlapping features panel
+    setOverlappingFeatures([]);
+    setSelectedFeature({ feature, layer: featureLayer, id: getFeatureId(feature, 0) });
+  }, [layer.title, highlightFeature]);
+
+  const handleMapClick = useCallback((e: L.LeafletMouseEvent) => {
+    if (!vectorLayerRef.current || !mapRef.current) return;
+
+    const clickedFeatures: OverlappingFeature[] = [];
+    
+    vectorLayerRef.current.eachLayer((featureLayer: L.Layer) => {
+      // Check if the click is within the layer bounds
+      if ('getBounds' in featureLayer) {
+        const bounds = (featureLayer as L.Polygon).getBounds();
+        if (bounds.contains(e.latlng)) {
+          // More precise check using point in polygon for polygon features
+          const feature = (featureLayer as any).feature as GeoJSON.Feature;
+          if (feature) {
+            clickedFeatures.push({
+              feature,
+              layer: featureLayer,
+              id: getFeatureId(feature, clickedFeatures.length)
+            });
+          }
+        }
+      } else if ('getLatLng' in featureLayer) {
+        // For point features, check distance
+        const latlng = (featureLayer as L.Marker).getLatLng();
+        const distance = e.latlng.distanceTo(latlng);
+        if (distance < 50) { // Within 50 meters
+          const feature = (featureLayer as any).feature as GeoJSON.Feature;
+          if (feature) {
+            clickedFeatures.push({
+              feature,
+              layer: featureLayer,
+              id: getFeatureId(feature, clickedFeatures.length)
+            });
+          }
+        }
+      }
+    });
+
+    if (clickedFeatures.length > 1) {
+      // Multiple overlapping features - show selection panel
+      setOverlappingFeatures(clickedFeatures);
+      setSelectedFeature(null);
+      mapRef.current.closePopup();
+    } else if (clickedFeatures.length === 1) {
+      // Single feature - zoom and highlight directly
+      zoomToFeature(clickedFeatures[0].feature, clickedFeatures[0].layer);
+    } else {
+      // No features - reset
+      setOverlappingFeatures([]);
+      setSelectedFeature(null);
+      if (highlightedLayer && 'setStyle' in highlightedLayer) {
+        (highlightedLayer as L.Path).setStyle({
+          color: '#0891b2',
+          weight: 2,
+          opacity: 0.8,
+          fillColor: '#0891b2',
+          fillOpacity: 0.3
+        });
+      }
+      setHighlightedLayer(null);
+    }
+  }, [zoomToFeature, highlightedLayer]);
 
   const addFeaturesToMap = useCallback((features: GeoJSON.Feature[]) => {
     if (!mapRef.current) return;
@@ -148,6 +306,8 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     if (vectorLayerRef.current) {
       vectorLayerRef.current.remove();
     }
+
+    featureLayersMapRef.current.clear();
 
     // Create new GeoJSON layer
     const geoJsonLayer = L.geoJSON(geojson, {
@@ -169,14 +329,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
         });
       },
       onEachFeature: (feature, featureLayer) => {
-        const props = feature.properties;
-        if (props) {
-          const popupContent = createPopupContent(props, layer.title);
-          featureLayer.bindPopup(popupContent, { 
-            maxWidth: 350,
-            className: 'custom-popup'
-          });
-        }
+        featureLayersMapRef.current.set(feature, featureLayer);
       }
     });
 
@@ -192,7 +345,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
         mapRef.current.fitBounds(bounds, { padding: [20, 20] });
       }
     }
-  }, [layer.title, showVectorLayer]);
+  }, [showVectorLayer]);
 
   const loadFeatures = useCallback(async (startIndex: number = 0, append: boolean = false) => {
     if (!append) {
@@ -270,7 +423,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     if (!mapContainerRef.current || mapRef.current) return;
 
     const map = L.map(mapContainerRef.current, {
-      attributionControl: false // Remove attribution
+      attributionControl: false
     });
     mapRef.current = map;
 
@@ -312,8 +465,22 @@ export function MapModal({ layer, onClose }: MapModalProps) {
       wmsLayerRef.current = null;
       vectorLayerRef.current = null;
       allFeaturesRef.current = [];
+      featureLayersMapRef.current.clear();
     };
   }, [layer]);
+
+  // Add click handler to map
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    mapRef.current.on('click', handleMapClick);
+    
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.off('click', handleMapClick);
+      }
+    };
+  }, [handleMapClick]);
 
   // Toggle WMS layer visibility
   useEffect(() => {
@@ -400,6 +567,113 @@ export function MapModal({ layer, onClose }: MapModalProps) {
               <span>Vetorial</span>
             </button>
           </div>
+
+          {/* Overlapping Features Panel */}
+          {overlappingFeatures.length > 1 && (
+            <div className="absolute top-4 left-4 z-[1000] bg-background border-2 border-border shadow-lg max-w-sm">
+              <div className="flex items-center justify-between p-3 border-b border-border">
+                <div>
+                  <h3 className="font-bold text-sm">Feições sobrepostas ({overlappingFeatures.length} encontradas)</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Clique em "Ver Detalhes" para centralizar no mapa e ver as propriedades de cada feição.
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 flex-shrink-0"
+                  onClick={() => setOverlappingFeatures([])}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <ScrollArea className="max-h-[300px]">
+                <div className="p-2 space-y-2">
+                  {overlappingFeatures.map((item, index) => (
+                    <div 
+                      key={index}
+                      className="border border-border p-3 bg-card hover:bg-muted transition-colors"
+                    >
+                      <p className="font-mono text-sm font-medium truncate mb-2" title={item.id}>
+                        {item.id}
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full gap-2 h-8"
+                        onClick={() => zoomToFeature(item.feature, item.layer)}
+                      >
+                        <ZoomIn className="w-3 h-3" />
+                        Ver Detalhes
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+
+          {/* Selected Feature Details Panel */}
+          {selectedFeature && selectedFeature.feature.properties && (
+            <div className="absolute bottom-4 left-4 z-[1000] bg-background border-2 border-border shadow-lg max-w-sm">
+              <div className="flex items-center justify-between p-3 border-b border-border bg-primary text-primary-foreground">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  <span className="font-bold text-sm truncate" title={selectedFeature.id}>
+                    {selectedFeature.id}
+                  </span>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-6 w-6 text-primary-foreground hover:bg-primary-foreground/20"
+                  onClick={() => {
+                    setSelectedFeature(null);
+                    if (highlightedLayer && 'setStyle' in highlightedLayer) {
+                      (highlightedLayer as L.Path).setStyle({
+                        color: '#0891b2',
+                        weight: 2,
+                        opacity: 0.8,
+                        fillColor: '#0891b2',
+                        fillOpacity: 0.3
+                      });
+                    }
+                    setHighlightedLayer(null);
+                  }}
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+              <ScrollArea className="max-h-[200px]">
+                <div className="divide-y divide-border">
+                  {Object.entries(selectedFeature.feature.properties)
+                    .filter(([key, value]) => 
+                      value !== null && 
+                      value !== undefined && 
+                      value !== '' && 
+                      !key.toLowerCase().includes('geom') &&
+                      !key.toLowerCase().includes('geometry')
+                    )
+                    .slice(0, 15)
+                    .map(([key, value], index) => (
+                      <div 
+                        key={key}
+                        className={`flex justify-between gap-4 px-3 py-2 text-xs ${
+                          index % 2 === 0 ? 'bg-muted' : 'bg-background'
+                        }`}
+                      >
+                        <span className="font-medium text-muted-foreground whitespace-nowrap">
+                          {formatPropertyKey(key)}
+                        </span>
+                        <span className="text-foreground text-right truncate" title={String(value)}>
+                          {formatPropertyValue(value)}
+                        </span>
+                      </div>
+                    ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
 
           {/* Load More Button */}
           {hasMore && !loading && !loadingMore && (
