@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search, Database, Layers, RefreshCw } from "lucide-react";
@@ -11,7 +11,8 @@ interface DashboardExplorerProps {
   userPlan: 'gratuito' | 'profissional' | 'completo';
 }
 
-export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
+export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>(
+  function DashboardExplorer({ userPlan }, ref) {
   const [layers, setLayers] = useState<Layer[]>([]);
   const [filteredLayers, setFilteredLayers] = useState<Layer[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,7 +51,7 @@ export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
     .concat(groups.has('OUTROS') ? ['OUTROS'] : []);
 
   return (
-    <section className="py-8">
+    <section ref={ref} className="py-8">
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
           Dados Geoespaciais
@@ -173,4 +174,6 @@ export function DashboardExplorer({ userPlan }: DashboardExplorerProps) {
       )}
     </section>
   );
-}
+});
+
+DashboardExplorer.displayName = "DashboardExplorer";
