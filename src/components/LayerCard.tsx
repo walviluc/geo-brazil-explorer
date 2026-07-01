@@ -8,12 +8,13 @@ interface LayerCardProps {
   name: string;
   title: string;
   abstract: string;
+  sourceUrl: string;
   userPlan: PlanType;
   onShowMap: () => void;
 }
 
 export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
-  function LayerCard({ name, title, abstract, userPlan, onShowMap }, ref) {
+  function LayerCard({ name, title, abstract, sourceUrl, userPlan, onShowMap }, ref) {
     const navigate = useNavigate();
     const [downloading, setDownloading] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -35,7 +36,7 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
       setStatus('idle');
       
       try {
-        const data = await downloadLayerAsGeoJSON(name);
+        const data = await downloadLayerAsGeoJSON(name, sourceUrl);
         
         const blob = new Blob([JSON.stringify(data, null, 2)], {
           type: 'application/json'
