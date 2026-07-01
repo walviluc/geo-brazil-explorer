@@ -47,6 +47,7 @@ export const StateModal = forwardRef<HTMLDivElement, StateModalProps>(
                   name={layer.name}
                   title={layer.title}
                   abstract={layer.abstract}
+                  sourceUrl={layer.sourceUrl}
                   userPlan={userPlan}
                   onShowMap={() => onShowMap(layer)}
                 />

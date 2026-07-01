@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Layer, downloadLayerAsGeoJSON, WMS_BASE_URL, FEATURES_PER_PAGE } from "@/lib/wms-explorer";
+import { Layer, downloadLayerAsGeoJSON, FEATURES_PER_PAGE } from "@/lib/wms-explorer";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import L from "leaflet";
@@ -359,7 +359,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     
     try {
       setLoadProgress(30);
-      const data = await downloadLayerAsGeoJSON(layer.name, startIndex, FEATURES_PER_PAGE);
+      const data = await downloadLayerAsGeoJSON(layer.name, layer.sourceUrl, startIndex, FEATURES_PER_PAGE);
       setLoadProgress(70);
       const geojson = data.geojson;
       
@@ -436,7 +436,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     map.setView([-14.235, -51.925], 4);
 
     // Add WMS tile layer for raster visualization without attribution
-    const wmsLayer = L.tileLayer.wms(WMS_BASE_URL, {
+    const wmsLayer = L.tileLayer.wms(layer.sourceUrl, {
       layers: layer.name,
       format: 'image/png',
       transparent: true,

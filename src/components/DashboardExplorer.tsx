@@ -1,8 +1,12 @@
 import { useState, useEffect, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Database, Layers, RefreshCw } from "lucide-react";
+import { Loader2, Search, Database, Layers, RefreshCw, Globe } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import { fetchLayers, groupLayersByState, Layer, UF_NAMES, PlanType } from "@/lib/wms-explorer";
+import { DATA_SOURCES, DEFAULT_SOURCE, getSourceById } from "@/lib/data-sources";
 import { StateCard } from "./StateCard";
 import { StateModal } from "./StateModal";
 import { MapModal } from "./MapModal";
@@ -20,13 +24,16 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedState, setSelectedState] = useState<{ uf: string; layers: Layer[] } | null>(null);
   const [mapLayer, setMapLayer] = useState<Layer | null>(null);
+  const [sourceId, setSourceId] = useState<string>(DEFAULT_SOURCE.id);
+
+  const currentSource = getSourceById(sourceId);
 
   const loadLayers = async () => {
     setLoading(true);
     setError(null);
     
     try {
-      const data = await fetchLayers();
+      const data = await fetchLayers(currentSource.url);
       setLayers(data);
       setFilteredLayers(data);
     } catch (err) {
@@ -35,6 +42,13 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
       setLoading(false);
     }
   };
+
+  // Reset when source changes
+  useEffect(() => {
+    setLayers([]);
+    setFilteredLayers([]);
+    setError(null);
+  }, [sourceId]);
 
   useEffect(() => {
     const term = searchTerm.toLowerCase();
@@ -57,8 +71,31 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
           Dados Geoespaciais
         </h2>
         <p className="text-muted-foreground">
-          Selecione um estado para visualizar e baixar as camadas disponíveis
+          Escolha uma fonte de dados pública e explore as camadas disponíveis
         </p>
+      </div>
+
+      {/* Data source selector */}
+      <div className="max-w-2xl mx-auto mb-6">
+        <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
+          <Globe className="w-4 h-4" />
+          Fonte de dados
+        </label>
+        <Select value={sourceId} onValueChange={setSourceId}>
+          <SelectTrigger className="h-12">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="max-h-[400px]">
+            {DATA_SOURCES.map(src => (
+              <SelectItem key={src.id} value={src.id}>
+                <div className="flex flex-col text-left">
+                  <span className="font-medium">{src.label}</span>
+                  <span className="text-xs text-muted-foreground">{src.description}</span>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Controls */}
