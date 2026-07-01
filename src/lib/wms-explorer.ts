@@ -62,6 +62,7 @@ const PROXIES = [
 ];
 
 async function fetchWithProxy(url: string, options?: RequestInit): Promise<Response> {
+  let lastStatus: number | null = null;
   for (let i = 0; i < PROXIES.length; i++) {
     try {
       const proxyUrl = PROXIES[i](url);
@@ -75,11 +76,16 @@ async function fetchWithProxy(url: string, options?: RequestInit): Promise<Respo
       }
       const response = await fetch(proxyUrl, init);
       if (response.ok) return response;
+      lastStatus = response.status;
     } catch {
       continue;
     }
   }
-  throw new Error('Todos os proxies falharam');
+  throw new Error(
+    lastStatus === 500 || lastStatus === 502 || lastStatus === 504
+      ? 'O servidor de dados (portalmaps.com.br) está indisponível no momento. Tente novamente mais tarde.'
+      : 'Não foi possível acessar o servidor de dados. Verifique sua conexão ou tente novamente mais tarde.'
+  );
 }
 
 function parseBoundingBox(bboxElement: Element): BoundingBox | null {
