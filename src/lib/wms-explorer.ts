@@ -1,10 +1,14 @@
-export const WMS_BASE_URL = 'https://portalmaps.com.br/geoserver/wms';
+import { DEFAULT_SOURCE } from './data-sources';
+
+export const WMS_BASE_URL = DEFAULT_SOURCE.url;
 
 export interface Layer {
   name: string;
   title: string;
   abstract: string;
   bbox: BoundingBox | null;
+  /** WMS/OWS base URL this layer originates from. */
+  sourceUrl: string;
 }
 
 export interface BoundingBox {
@@ -49,8 +53,6 @@ export const FREE_LAYERS = [
   "CAR_USO_RESTRITO:car_uso_restrito"
 ];
 
-const BASE_URL = 'https://portalmaps.com.br/geoserver/wms';
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
@@ -83,7 +85,7 @@ async function fetchWithProxy(url: string, options?: RequestInit): Promise<Respo
   }
   throw new Error(
     lastStatus === 500 || lastStatus === 502 || lastStatus === 504
-      ? 'O servidor de dados (portalmaps.com.br) está indisponível no momento. Tente novamente mais tarde.'
+      ? 'O servidor de dados está indisponível no momento. Tente outra fonte ou tente novamente mais tarde.'
       : 'Não foi possível acessar o servidor de dados. Verifique sua conexão ou tente novamente mais tarde.'
   );
 }
@@ -131,8 +133,8 @@ export function getUF(nameOrTitle: string): string | null {
   return null;
 }
 
-export async function fetchLayers(): Promise<Layer[]> {
-  const url = `${BASE_URL}?service=WMS&version=1.3.0&request=GetCapabilities`;
+export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promise<Layer[]> {
+  const url = `${sourceUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;
   
   const response = await fetchWithProxy(url, {
     headers: { 'Accept': 'application/xml, text/xml, */*' }
@@ -159,7 +161,8 @@ export async function fetchLayers(): Promise<Layer[]> {
         name: name,
         title: title || name,
         abstract,
-        bbox: parseBoundingBox(bbox)
+        bbox: parseBoundingBox(bbox),
+        sourceUrl,
       });
     }
   });
@@ -170,7 +173,8 @@ export async function fetchLayers(): Promise<Layer[]> {
 export const FEATURES_PER_PAGE = 100;
 
 export async function downloadLayerAsGeoJSON(
-  layerName: string, 
+  layerName: string,
+  sourceUrl: string = DEFAULT_SOURCE.url,
   startIndex: number = 0, 
   maxFeatures: number = FEATURES_PER_PAGE
 ): Promise<{
@@ -184,7 +188,7 @@ export async function downloadLayerAsGeoJSON(
   };
   geojson: GeoJSON.FeatureCollection;
 }> {
-  const url = `${BASE_URL}?service=WFS&version=2.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=EPSG:4326&startIndex=${startIndex}&count=${maxFeatures}`;
+  const url = `${sourceUrl}?service=WFS&version=2.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=EPSG:4326&startIndex=${startIndex}&count=${maxFeatures}`;
   
   const response = await fetchWithProxy(url, {
     headers: { 'Accept': 'application/json, application/geo+json, */*' }
@@ -195,7 +199,7 @@ export async function downloadLayerAsGeoJSON(
   
   return {
     metadata: {
-      source: 'GeoData Brasil - Portal Maps WMS/WFS',
+      source: `GeoData Brasil - ${sourceUrl}`,
       layer: layerName,
       downloadedAt: new Date().toISOString(),
       totalFeatures: featuresCount,
