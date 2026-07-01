@@ -79,7 +79,26 @@ async function fetchWithProxy(url: string, options?: RequestInit): Promise<Respo
         };
       }
       const response = await fetch(proxyUrl, init);
-      if (response.ok) return response;
+      if (response.ok) {
+        // Edge function returns 200 + JSON envelope for upstream 4xx errors
+        // to avoid tripping the runtime error interceptor. Detect and throw.
+        if (i === 0) {
+          const ct = response.headers.get("content-type") || "";
+          if (ct.includes("application/json")) {
+            const cloned = response.clone();
+            try {
+              const data = await cloned.json();
+              if (data && data.__proxyError) {
+                throw new UpstreamError(data.message || "Camada indisponível.");
+              }
+            } catch (e) {
+              if (e instanceof UpstreamError) throw e;
+              // Not JSON we care about — fall through and return original response.
+            }
+          }
+        }
+        return response;
+      }
       lastStatus = response.status;
       // 4xx = the upstream GeoServer rejected the request (invalid layer,
       // WFS not published, etc). Fallback proxies can't fix that — surface
