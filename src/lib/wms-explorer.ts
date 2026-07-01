@@ -51,16 +51,29 @@ export const FREE_LAYERS = [
 
 const BASE_URL = 'https://portalmaps.com.br/geoserver/wms';
 
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+
 const PROXIES = [
+  (url: string) =>
+    `${SUPABASE_URL}/functions/v1/geoserver-proxy?url=${encodeURIComponent(url)}`,
   (url: string) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
 ];
 
 async function fetchWithProxy(url: string, options?: RequestInit): Promise<Response> {
-  for (const proxyFn of PROXIES) {
+  for (let i = 0; i < PROXIES.length; i++) {
     try {
-      const proxyUrl = proxyFn(url);
-      const response = await fetch(proxyUrl, options);
+      const proxyUrl = PROXIES[i](url);
+      const init: RequestInit = { ...options };
+      if (i === 0) {
+        init.headers = {
+          ...(options?.headers || {}),
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        };
+      }
+      const response = await fetch(proxyUrl, init);
       if (response.ok) return response;
     } catch {
       continue;
