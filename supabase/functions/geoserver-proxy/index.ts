@@ -45,6 +45,26 @@ Deno.serve(async (req) => {
       headers: { Accept: req.headers.get("accept") || "*/*" },
     });
 
+    // Upstream 4xx = the GeoServer rejected the request (e.g. layer has no
+    // WFS published). Return 200 + JSON envelope so the browser and Lovable
+    // runtime don't flag it as an edge-function error.
+    if (upstream.status >= 400 && upstream.status < 500) {
+      const text = await upstream.text();
+      const match = text.match(/<ows:ExceptionText[^>]*>([\s\S]*?)<\/ows:ExceptionText>/i);
+      const detail = match?.[1]?.trim();
+      return new Response(
+        JSON.stringify({
+          __proxyError: true,
+          upstreamStatus: upstream.status,
+          message:
+            detail && detail !== "(details omitted)"
+              ? `O servidor rejeitou a requisição: ${detail}`
+              : "Esta camada não está disponível para download nesta fonte (WFS não publicado ou camada inválida no servidor de origem).",
+        }),
+        { status: 200, headers: { ...corsHeaders, "content-type": "application/json" } },
+      );
+    }
+
     const body = await upstream.arrayBuffer();
     const headers = new Headers(corsHeaders);
     const ct = upstream.headers.get("content-type");
