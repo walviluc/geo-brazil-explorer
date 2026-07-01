@@ -63,6 +63,8 @@ const PROXIES = [
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
 ];
 
+class UpstreamError extends Error {}
+
 async function fetchWithProxy(url: string, options?: RequestInit): Promise<Response> {
   let lastStatus: number | null = null;
   for (let i = 0; i < PROXIES.length; i++) {
@@ -79,7 +81,21 @@ async function fetchWithProxy(url: string, options?: RequestInit): Promise<Respo
       const response = await fetch(proxyUrl, init);
       if (response.ok) return response;
       lastStatus = response.status;
-    } catch {
+      // 4xx = the upstream GeoServer rejected the request (invalid layer,
+      // WFS not published, etc). Fallback proxies can't fix that — surface
+      // a clear message and stop trying.
+      if (response.status >= 400 && response.status < 500) {
+        const body = await response.text().catch(() => '');
+        const match = body.match(/<ows:ExceptionText[^>]*>([\s\S]*?)<\/ows:ExceptionText>/i);
+        const detail = match?.[1]?.trim();
+        throw new UpstreamError(
+          detail && detail !== '(details omitted)'
+            ? `O servidor rejeitou a requisição: ${detail}`
+            : 'Esta camada não está disponível para download nesta fonte (WFS não publicado ou camada inválida no servidor de origem).'
+        );
+      }
+    } catch (err) {
+      if (err instanceof UpstreamError) throw err;
       continue;
     }
   }
