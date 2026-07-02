@@ -10,15 +10,26 @@ export interface DataSource {
   /** Base OWS/WMS endpoint (no query string). */
   url: string;
   category: 'geral' | 'ambiente' | 'territorio' | 'infraestrutura' | 'recursos' | 'social';
+  /** Internal Lovable-managed source (shapefile/geojson via edge function). */
+  internal?: boolean;
+  /** Minimum plan required to access this source (only relevant when internal). */
+  requiredPlan?: 'profissional' | 'completo';
 }
+
+/** Sentinel URL used by internal (Lovable-managed) data sources.
+ *  Downstream code detects the `internal://` prefix and routes requests to
+ *  the `custom-sources` edge function instead of an external WMS server. */
+export const INTERNAL_SOURCE_URL = 'internal://custom-sources';
 
 export const DATA_SOURCES: DataSource[] = [
   {
-    id: 'portalmaps',
-    label: 'Portal Maps (Padrão)',
-    description: 'Dados agregados por estado — fonte original da plataforma.',
-    url: 'https://portalmaps.com.br/geoserver/wms',
+    id: 'internal-premium',
+    label: 'Catálogo Premium (Interno)',
+    description: 'Shapefiles curados por estado, gerenciados via backend. Acesso Profissional/Completo.',
+    url: INTERNAL_SOURCE_URL,
     category: 'geral',
+    internal: true,
+    requiredPlan: 'profissional',
   },
   {
     id: 'ibge',
