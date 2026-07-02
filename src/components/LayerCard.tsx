@@ -2,7 +2,7 @@ import { useState, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn } from "lucide-react";
-import { downloadLayerAsGeoJSON, isLayerFree, canAccessLayer, PlanType } from "@/lib/wms-explorer";
+import { downloadLayerAsGeoJSON, isPremiumSource, canAccessLayer, PlanType } from "@/lib/wms-explorer";
 
 interface LayerCardProps {
   name: string;
@@ -20,8 +20,9 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     
-    const isFree = isLayerFree(name);
-    const hasAccess = canAccessLayer(name, userPlan);
+    const isPremium = isPremiumSource(sourceUrl);
+    const isFree = !isPremium;
+    const hasAccess = canAccessLayer(sourceUrl, userPlan);
     const isLoggedIn = userPlan !== null;
 
     const handleDownload = async () => {

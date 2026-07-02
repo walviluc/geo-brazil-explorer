@@ -49,10 +49,12 @@ export const UF_NAMES: Record<string, string> = {
   TO: "Tocantins"
 };
 
-export const FREE_LAYERS = [
-  "TI_UC_BR:unidade_conservacao_federal",
-  "CAR_USO_RESTRITO:car_uso_restrito"
-];
+/** A layer is premium (paid) only when it comes from an internal/managed
+ *  source. All external public official sources (IBGE, INPE, IBAMA, etc.)
+ *  are free for any authenticated user. */
+export function isPremiumSource(sourceUrl: string | undefined | null): boolean {
+  return !!sourceUrl && sourceUrl.startsWith('internal://');
+}
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
@@ -302,27 +304,12 @@ export function groupLayersByState(layers: Layer[]): Map<string, Layer[]> {
   return groups;
 }
 
-export function isLayerFree(layerName: string): boolean {
-  return FREE_LAYERS.some(freeLayer => 
-    layerName.toLowerCase().includes(freeLayer.toLowerCase().split(':')[1])
-  );
-}
-
 export type PlanType = 'gratuito' | 'profissional' | 'completo' | null;
 
-export function canAccessLayer(layerName: string, userPlan: PlanType): boolean {
-  // User must be logged in to access any layer
+/** Public official data (external WMS sources) is free for any logged-in
+ *  user. Only the internal premium catalog requires a paid plan. */
+export function canAccessLayer(sourceUrl: string, userPlan: PlanType): boolean {
   if (userPlan === null) return false;
-  
-  // Free layers accessible to all logged-in users
-  if (isLayerFree(layerName)) return true;
-  
-  // Completo plan has access to everything
-  if (userPlan === 'completo') return true;
-  
-  // Profissional plan has access to most layers except premium
-  if (userPlan === 'profissional') return true;
-  
-  // Gratuito only has access to free layers
-  return false;
+  if (!isPremiumSource(sourceUrl)) return true;
+  return userPlan === 'profissional' || userPlan === 'completo';
 }
