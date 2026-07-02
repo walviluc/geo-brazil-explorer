@@ -435,16 +435,19 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     // Set initial view for Brazil
     map.setView([-14.235, -51.925], 4);
 
-    // Add WMS tile layer for raster visualization without attribution
-    const wmsLayer = L.tileLayer.wms(layer.sourceUrl, {
-      layers: layer.name,
-      format: 'image/png',
-      transparent: true,
-      version: '1.1.1',
-      attribution: '',
-      opacity: 0.7
-    }).addTo(map);
-    wmsLayerRef.current = wmsLayer;
+    // Add WMS tile layer for raster visualization — skipped for internal
+    // sources (they serve GeoJSON directly, not WMS tiles).
+    if (!layer.sourceUrl.startsWith('internal://')) {
+      const wmsLayer = L.tileLayer.wms(layer.sourceUrl, {
+        layers: layer.name,
+        format: 'image/png',
+        transparent: true,
+        version: '1.1.1',
+        attribution: '',
+        opacity: 0.7
+      }).addTo(map);
+      wmsLayerRef.current = wmsLayer;
+    }
 
     // Fit to layer bounds if available
     if (layer.bbox) {
