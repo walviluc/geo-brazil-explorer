@@ -1,4 +1,5 @@
-import { DEFAULT_SOURCE } from './data-sources';
+import { DEFAULT_SOURCE, INTERNAL_SOURCE_URL } from './data-sources';
+import { supabase } from '@/integrations/supabase/client';
 
 export const WMS_BASE_URL = DEFAULT_SOURCE.url;
 
@@ -169,6 +170,26 @@ export function getUF(nameOrTitle: string): string | null {
 }
 
 export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promise<Layer[]> {
+  // Internal (Lovable-managed) sources are served through an edge function.
+  if (sourceUrl.startsWith('internal://')) {
+    const { data, error } = await supabase.functions.invoke('custom-sources', {
+      body: { action: 'list' },
+    });
+    if (error) throw new Error(error.message || 'Erro ao carregar fontes internas');
+    if (data?.error) throw new Error(data.error);
+    const items = (data?.items ?? []) as Array<{
+      id: string; name: string; description: string | null; layer_name: string; uf: string | null;
+    }>;
+    return items.map(it => ({
+      name: it.layer_name || it.id,
+      title: it.name,
+      abstract: it.description || 'Fonte interna (arquivo local).',
+      bbox: null,
+      // Encode the source-record id so downstream calls can fetch its file.
+      sourceUrl: `internal://custom-sources/${it.id}`,
+    }));
+  }
+
   const url = `${sourceUrl}?service=WMS&version=1.3.0&request=GetCapabilities`;
   
   const response = await fetchWithProxy(url, {
@@ -223,6 +244,30 @@ export async function downloadLayerAsGeoJSON(
   };
   geojson: GeoJSON.FeatureCollection;
 }> {
+  // Internal source: fetch the stored file via edge function.
+  if (sourceUrl.startsWith('internal://')) {
+    const id = sourceUrl.split('/').pop() || '';
+    const { data, error } = await supabase.functions.invoke('custom-sources', {
+      body: { action: 'get', id },
+    });
+    if (error) throw new Error(error.message || 'Erro ao carregar camada interna');
+    if (data?.error) throw new Error(data.error);
+    const geojson = data.geojson as GeoJSON.FeatureCollection;
+    const all = geojson.features || [];
+    const slice = all.slice(startIndex, startIndex + maxFeatures);
+    return {
+      metadata: {
+        source: `GeoData Brasil - Catálogo Interno`,
+        layer: layerName,
+        downloadedAt: new Date().toISOString(),
+        totalFeatures: slice.length,
+        startIndex,
+        hasMore: startIndex + slice.length < all.length,
+      },
+      geojson: { type: 'FeatureCollection', features: slice },
+    };
+  }
+
   const url = `${sourceUrl}?service=WFS&version=2.0.0&request=GetFeature&typeName=${layerName}&outputFormat=application/json&srsName=EPSG:4326&startIndex=${startIndex}&count=${maxFeatures}`;
   
   const response = await fetchWithProxy(url, {
