@@ -22,30 +22,28 @@ const plans: {
   {
     id: 'gratuito',
     name: 'Gratuito',
-    description: 'Perfeito para conhecer a plataforma',
+    description: 'Todos os dados públicos oficiais, sem custo',
     monthlyPrice: 0,
     yearlyPrice: 0,
     features: [
-      'Acesso a Unidades de Conservação Federal',
-      'Acesso a CAR Uso Restrito',
-      'Visualização no mapa',
-      'Download em GeoJSON',
-      'Busca por estado'
+      'Acesso a TODAS as fontes públicas oficiais (IBGE, INPE, IBAMA, FUNAI, ICMBio, EMBRAPA e mais)',
+      'Visualização e download em GeoJSON',
+      'Busca por estado e tema',
+      '500+ camadas gratuitas'
     ],
     popular: false
   },
   {
     id: 'profissional',
     name: 'Profissional',
-    description: 'Para profissionais e pequenas equipes',
+    description: 'Catálogo Premium curado + tudo do Gratuito',
     monthlyPrice: 29.90,
     yearlyPrice: 20,
     features: [
       'Tudo do plano Gratuito',
-      'Acesso a 50+ camadas adicionais',
-      'Territórios Indígenas',
-      'Áreas de Proteção Ambiental',
-      'Download ilimitado',
+      'Acesso ao Catálogo Premium interno',
+      'Shapefiles curados por estado',
+      'Dados exclusivos gerenciados pela plataforma',
       'Suporte por email'
     ],
     popular: true
@@ -53,17 +51,15 @@ const plans: {
   {
     id: 'completo',
     name: 'Completo',
-    description: 'Acesso total para empresas e pesquisadores',
+    description: 'Premium + suporte dedicado para empresas',
     monthlyPrice: 60,
     yearlyPrice: 45,
     features: [
-      'Acesso a TODAS as camadas',
-      'Atualizações em tempo real',
-      'API de integração',
+      'Tudo do plano Profissional',
+      'Acesso completo ao Catálogo Premium',
       'Suporte prioritário 24/7',
-      'Dados históricos',
-      'Exportação em múltiplos formatos',
-      'Dashboard personalizado'
+      'Atendimento a demandas específicas',
+      'Exportação em múltiplos formatos'
     ],
     popular: false
   }

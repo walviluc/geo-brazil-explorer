@@ -34,8 +34,8 @@ export function Hero() {
         </h1>
         
         <p className="text-lg md:text-xl text-secondary-foreground/80 max-w-3xl mx-auto mb-8 leading-relaxed">
-          Acesse dados geoespaciais de todos os 27 estados brasileiros. Unidades de conservação, 
-          áreas de uso restrito, territórios indígenas e muito mais em formato GeoJSON.
+          Todos os dados públicos oficiais do Brasil — IBGE, INPE, IBAMA, FUNAI, ICMBio e mais —
+          gratuitos, em formato GeoJSON. Planos pagos apenas para o Catálogo Premium interno.
         </p>
         
         {/* Stats */}
