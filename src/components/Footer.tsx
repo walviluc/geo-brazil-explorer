@@ -49,7 +49,7 @@ export function Footer() {
         <div className="border-t border-secondary-foreground/10 pt-8 text-center text-secondary-foreground/50 text-sm">
           <p>© {new Date().getFullYear()} GeoData Brasil. Todos os direitos reservados.</p>
           <p className="mt-2">
-            Dados provenientes do <a href="https://portalmaps.com.br" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Portal Maps</a>
+           Este é um projeto de serviço público digital que promove o acesso à informação em conformidade com a Lei nº 12.527/2011 (Lei de Acesso à Informação). Os dados são de responsabilidade dos órgãos originais.
           </p>
         </div>
       </div>
