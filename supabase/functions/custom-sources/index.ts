@@ -5,7 +5,9 @@
 //   converted to GeoJSON with shpjs.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import shp from "https://esm.sh/shpjs@6.1.0";
+// Pin to shpjs 4.x — v6 has a broken `but-unzip` re-export on esm.sh/denonext
+// that crashes the edge-runtime worker at boot.
+import shp from "https://esm.sh/shpjs@4.0.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
