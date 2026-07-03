@@ -10,6 +10,10 @@ export interface Layer {
   bbox: BoundingBox | null;
   /** WMS/OWS base URL this layer originates from. */
   sourceUrl: string;
+  /** Per-format premium flags (only meaningful for internal catalog). */
+  premiumFormats?: { geojson: boolean; kml: boolean; shapefile: boolean };
+  /** Stored file format for internal sources (drives shapefile availability). */
+  storedFormat?: "geojson" | "shapefile";
 }
 
 export interface BoundingBox {
@@ -181,6 +185,8 @@ export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promi
     if (data?.error) throw new Error(data.error);
     const items = (data?.items ?? []) as Array<{
       id: string; name: string; description: string | null; layer_name: string; uf: string | null;
+      geojson_premium?: boolean; kml_premium?: boolean; shapefile_premium?: boolean;
+      file_format?: "geojson" | "shapefile";
     }>;
     return items.map(it => ({
       name: it.layer_name || it.id,
@@ -189,6 +195,12 @@ export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promi
       bbox: null,
       // Encode the source-record id so downstream calls can fetch its file.
       sourceUrl: `internal://custom-sources/${it.id}`,
+      premiumFormats: {
+        geojson: !!it.geojson_premium,
+        kml: !!it.kml_premium,
+        shapefile: !!it.shapefile_premium,
+      },
+      storedFormat: it.file_format ?? "geojson",
     }));
   }
 
