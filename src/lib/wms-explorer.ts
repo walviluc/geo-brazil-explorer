@@ -230,6 +230,118 @@ export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promi
 
 export const FEATURES_PER_PAGE = 100;
 
+export type DownloadFormat = "geojson" | "kml" | "shapefile";
+
+function geojsonToKml(geojson: any, docName = "Layer"): string {
+  const esc = (s: unknown) =>
+    String(s ?? "").replace(/[&<>'"]/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&apos;", '"': "&quot;" }[c]!),
+    );
+  const coord = (c: number[]) => `${c[0]},${c[1]}${c[2] !== undefined ? "," + c[2] : ""}`;
+  const ring = (r: number[][]) => r.map(coord).join(" ");
+  const geom = (g: any): string => {
+    if (!g) return "";
+    switch (g.type) {
+      case "Point": return `<Point><coordinates>${coord(g.coordinates)}</coordinates></Point>`;
+      case "MultiPoint": return `<MultiGeometry>${g.coordinates.map((c: number[]) => `<Point><coordinates>${coord(c)}</coordinates></Point>`).join("")}</MultiGeometry>`;
+      case "LineString": return `<LineString><coordinates>${ring(g.coordinates)}</coordinates></LineString>`;
+      case "MultiLineString": return `<MultiGeometry>${g.coordinates.map((l: number[][]) => `<LineString><coordinates>${ring(l)}</coordinates></LineString>`).join("")}</MultiGeometry>`;
+      case "Polygon": {
+        const [outer, ...holes] = g.coordinates;
+        return `<Polygon><outerBoundaryIs><LinearRing><coordinates>${ring(outer)}</coordinates></LinearRing></outerBoundaryIs>${holes.map((h: number[][]) => `<innerBoundaryIs><LinearRing><coordinates>${ring(h)}</coordinates></LinearRing></innerBoundaryIs>`).join("")}</Polygon>`;
+      }
+      case "MultiPolygon":
+        return `<MultiGeometry>${g.coordinates.map((p: number[][][]) => geom({ type: "Polygon", coordinates: p })).join("")}</MultiGeometry>`;
+      default: return "";
+    }
+  };
+  const placemarks = (geojson?.features ?? []).map((f: any, i: number) => {
+    const p = f.properties || {};
+    const name = esc(p.name || p.NOME || p.nome || `Feature ${i + 1}`);
+    const data = Object.entries(p)
+      .map(([k, v]) => `<Data name="${esc(k)}"><value>${esc(v)}</value></Data>`).join("");
+    return `<Placemark><name>${name}</name><ExtendedData>${data}</ExtendedData>${geom(f.geometry)}</Placemark>`;
+  }).join("");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document><name>${esc(docName)}</name>${placemarks}</Document>\n</kml>`;
+}
+
+function base64ToBlob(b64: string, mime: string): Blob {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
+export class PremiumFormatError extends Error {
+  constructor(message: string) { super(message); this.name = "PremiumFormatError"; }
+}
+
+/** Download a layer in a given format, returning a Blob + filename ready
+ *  to trigger a browser save. Handles both internal (edge function) and
+ *  external WMS/WFS sources.  */
+export async function downloadLayerFile(
+  layerName: string,
+  sourceUrl: string,
+  format: DownloadFormat,
+): Promise<{ blob: Blob; filename: string }> {
+  const safe = layerName.replace(/[^a-zA-Z0-9._-]/g, "_");
+
+  if (sourceUrl.startsWith("internal://")) {
+    const id = sourceUrl.split("/").pop() || "";
+    const { data, error } = await supabase.functions.invoke("custom-sources", {
+      body: { action: "get", id, format },
+    });
+    if (error) {
+      // supabase.functions.invoke does not surface response body on non-2xx.
+      // Best-effort: mark as premium error when hint is present.
+      throw new Error(error.message || "Erro ao carregar camada interna");
+    }
+    if (data?.error) {
+      if (data.code === "premium_required") throw new PremiumFormatError(data.error);
+      throw new Error(data.error);
+    }
+    if (format === "shapefile") {
+      const blob = base64ToBlob(data.base64, data.mime || "application/zip");
+      return { blob, filename: data.filename || `${safe}.zip` };
+    }
+    if (format === "kml") {
+      const blob = new Blob([data.kml], { type: data.mime || "application/vnd.google-earth.kml+xml" });
+      return { blob, filename: data.filename || `${safe}.kml` };
+    }
+    const blob = new Blob([JSON.stringify(data.geojson, null, 2)], { type: "application/geo+json" });
+    return { blob, filename: data.filename || `${safe}.geojson` };
+  }
+
+  // External WMS/WFS source: use WFS GetFeature with outputFormat.
+  const outputFormat =
+    format === "kml" ? "application/vnd.google-earth.kml+xml" :
+    format === "shapefile" ? "SHAPE-ZIP" :
+    "application/json";
+  const url = `${sourceUrl}?service=WFS&version=2.0.0&request=GetFeature&typeName=${layerName}&outputFormat=${encodeURIComponent(outputFormat)}&srsName=EPSG:4326&count=${FEATURES_PER_PAGE}`;
+  const response = await fetchWithProxy(url, { headers: { Accept: "*/*" } });
+
+  if (format === "geojson") {
+    const geo = await response.json();
+    const wrapped = {
+      metadata: { source: sourceUrl, layer: layerName, downloadedAt: new Date().toISOString() },
+      geojson: geo,
+    };
+    return {
+      blob: new Blob([JSON.stringify(wrapped, null, 2)], { type: "application/geo+json" }),
+      filename: `${safe}.geojson`,
+    };
+  }
+  if (format === "kml") {
+    const text = await response.text();
+    return {
+      blob: new Blob([text], { type: "application/vnd.google-earth.kml+xml" }),
+      filename: `${safe}.kml`,
+    };
+  }
+  const buf = await response.arrayBuffer();
+  return { blob: new Blob([buf], { type: "application/zip" }), filename: `${safe}.zip` };
+}
+
 export async function downloadLayerAsGeoJSON(
   layerName: string,
   sourceUrl: string = DEFAULT_SOURCE.url,
