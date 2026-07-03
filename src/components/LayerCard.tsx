@@ -1,5 +1,6 @@
 import { useState, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn } from "lucide-react";
 import { downloadLayerAsGeoJSON, isPremiumSource, canAccessLayer, PlanType } from "@/lib/wms-explorer";
