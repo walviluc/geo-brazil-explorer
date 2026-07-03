@@ -49,6 +49,8 @@ export const StateModal = forwardRef<HTMLDivElement, StateModalProps>(
                   abstract={layer.abstract}
                   sourceUrl={layer.sourceUrl}
                   userPlan={userPlan}
+                  premiumFormats={layer.premiumFormats}
+                  storedFormat={layer.storedFormat}
                   onShowMap={() => onShowMap(layer)}
                 />
               ))}
