@@ -13,6 +13,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { UF_NAMES } from '@/lib/wms-explorer';
 import { Loader2, Trash2, Upload } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 interface Row {
   id: string;
@@ -24,6 +25,9 @@ interface Row {
   file_format: 'geojson' | 'shapefile';
   required_plan: 'profissional' | 'completo';
   created_at: string;
+  geojson_premium: boolean;
+  kml_premium: boolean;
+  shapefile_premium: boolean;
 }
 
 export default function AdminDataSources() {
@@ -41,6 +45,9 @@ export default function AdminDataSources() {
   const [layerName, setLayerName] = useState('');
   const [requiredPlan, setRequiredPlan] = useState<'profissional' | 'completo'>('profissional');
   const [file, setFile] = useState<File | null>(null);
+  const [geojsonPremium, setGeojsonPremium] = useState(false);
+  const [kmlPremium, setKmlPremium] = useState(false);
+  const [shpPremium, setShpPremium] = useState(false);
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -88,11 +95,15 @@ export default function AdminDataSources() {
         file_format: format,
         required_plan: requiredPlan,
         created_by: user!.id,
+        geojson_premium: geojsonPremium,
+        kml_premium: kmlPremium,
+        shapefile_premium: shpPremium,
       });
       if (insErr) throw insErr;
 
       toast({ title: 'Fonte adicionada' });
       setName(''); setDescription(''); setUf(''); setLayerName(''); setFile(null);
+      setGeojsonPremium(false); setKmlPremium(false); setShpPremium(false);
       await load();
     } catch (err) {
       toast({
@@ -114,6 +125,26 @@ export default function AdminDataSources() {
       return;
     }
     await load();
+  };
+
+  const toggleFormat = async (
+    row: Row,
+    field: 'geojson_premium' | 'kml_premium' | 'shapefile_premium',
+    value: boolean,
+  ) => {
+    // Optimistic UI update.
+    setRows(prev => prev.map(r => r.id === row.id ? { ...r, [field]: value } : r));
+    const patch = { [field]: value } as {
+      geojson_premium?: boolean; kml_premium?: boolean; shapefile_premium?: boolean;
+    };
+    const { error } = await supabase
+      .from('custom_data_sources')
+      .update(patch)
+      .eq('id', row.id);
+    if (error) {
+      toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
+      setRows(prev => prev.map(r => r.id === row.id ? { ...r, [field]: !value } : r));
+    }
   };
 
   if (authLoading || roleLoading) {
@@ -192,6 +223,23 @@ export default function AdminDataSources() {
             />
           </div>
         </div>
+        <div>
+          <Label className="mb-2 block">Formatos premium (desligado = grátis)</Label>
+          <div className="flex flex-wrap gap-6">
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={geojsonPremium} onCheckedChange={setGeojsonPremium} />
+              GeoJSON
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={kmlPremium} onCheckedChange={setKmlPremium} />
+              KML
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch checked={shpPremium} onCheckedChange={setShpPremium} />
+              Shapefile
+            </label>
+          </div>
+        </div>
         <Button type="submit" disabled={busy} className="w-fit">
           {busy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2" />}
           Enviar
@@ -210,6 +258,30 @@ export default function AdminDataSources() {
               {r.description && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
               )}
+              <div className="flex flex-wrap gap-4 mt-3">
+                <label className="flex items-center gap-2 text-xs">
+                  <Switch
+                    checked={r.geojson_premium}
+                    onCheckedChange={(v) => toggleFormat(r, 'geojson_premium', v)}
+                  />
+                  GeoJSON {r.geojson_premium ? 'premium' : 'grátis'}
+                </label>
+                <label className="flex items-center gap-2 text-xs">
+                  <Switch
+                    checked={r.kml_premium}
+                    onCheckedChange={(v) => toggleFormat(r, 'kml_premium', v)}
+                  />
+                  KML {r.kml_premium ? 'premium' : 'grátis'}
+                </label>
+                <label className="flex items-center gap-2 text-xs">
+                  <Switch
+                    checked={r.shapefile_premium}
+                    onCheckedChange={(v) => toggleFormat(r, 'shapefile_premium', v)}
+                    disabled={r.file_format !== 'shapefile'}
+                  />
+                  Shapefile {r.file_format !== 'shapefile' ? '(N/D)' : (r.shapefile_premium ? 'premium' : 'grátis')}
+                </label>
+              </div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => handleDelete(r)}>
               <Trash2 className="w-4 h-4 text-destructive" />
