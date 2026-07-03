@@ -134,9 +134,12 @@ export default function AdminDataSources() {
   ) => {
     // Optimistic UI update.
     setRows(prev => prev.map(r => r.id === row.id ? { ...r, [field]: value } : r));
+    const patch = { [field]: value } as {
+      geojson_premium?: boolean; kml_premium?: boolean; shapefile_premium?: boolean;
+    };
     const { error } = await supabase
       .from('custom_data_sources')
-      .update({ [field]: value })
+      .update(patch)
       .eq('id', row.id);
     if (error) {
       toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
