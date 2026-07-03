@@ -1,5 +1,6 @@
 import { useState, forwardRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn } from "lucide-react";
 import { downloadLayerAsGeoJSON, isPremiumSource, canAccessLayer, PlanType } from "@/lib/wms-explorer";
@@ -63,8 +64,18 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
     };
 
     const handleMapClick = () => {
-      if (!isLoggedIn && isFree) {
+      if (!isLoggedIn) {
         navigate('/auth');
+        return;
+      }
+      if (!hasAccess) {
+        toast('Acesso ao Catálogo Premium', {
+          description: 'Esta camada faz parte do Catálogo Premium. Faça upgrade para o plano Profissional ou Completo para visualizar.',
+          action: {
+            label: 'Ver Planos',
+            onClick: () => navigate('/subscription'),
+          },
+        });
         return;
       }
       onShowMap();
@@ -138,14 +149,15 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
             size="sm" 
             onClick={handleMapClick} 
             className="flex-1"
-            disabled={!isLoggedIn && !isFree ? false : false}
           >
-            {!isLoggedIn && isFree ? (
+            {!isLoggedIn ? (
               <LogIn className="w-4 h-4 mr-2" />
+            ) : !hasAccess ? (
+              <Lock className="w-4 h-4 mr-2" />
             ) : (
               <Map className="w-4 h-4 mr-2" />
             )}
-            {!isLoggedIn && isFree ? 'Login p/ Ver' : 'Ver Mapa'}
+            {!isLoggedIn ? 'Login p/ Ver' : !hasAccess ? 'Upgrade p/ Ver' : 'Ver Mapa'}
           </Button>
         </div>
         
