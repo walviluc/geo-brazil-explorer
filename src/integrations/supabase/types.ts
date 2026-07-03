@@ -20,10 +20,13 @@ export type Database = {
           created_by: string | null
           description: string | null
           file_format: string
+          geojson_premium: boolean
           id: string
+          kml_premium: boolean
           layer_name: string
           name: string
           required_plan: string
+          shapefile_premium: boolean
           storage_path: string
           uf: string | null
           updated_at: string
@@ -33,10 +36,13 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           file_format?: string
+          geojson_premium?: boolean
           id?: string
+          kml_premium?: boolean
           layer_name: string
           name: string
           required_plan?: string
+          shapefile_premium?: boolean
           storage_path: string
           uf?: string | null
           updated_at?: string
@@ -46,10 +52,13 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           file_format?: string
+          geojson_premium?: boolean
           id?: string
+          kml_premium?: boolean
           layer_name?: string
           name?: string
           required_plan?: string
+          shapefile_premium?: boolean
           storage_path?: string
           uf?: string | null
           updated_at?: string
