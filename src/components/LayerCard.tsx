@@ -9,7 +9,6 @@ import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn } from "lucide-
 import {
   downloadLayerFile,
   isPremiumSource,
-  canAccessLayer,
   PlanType,
   DownloadFormat,
   PremiumFormatError,
