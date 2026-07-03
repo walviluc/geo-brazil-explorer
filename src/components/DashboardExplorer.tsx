@@ -197,7 +197,6 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
           onClose={() => setSelectedState(null)}
           onShowMap={(layer) => {
             setMapLayer(layer);
-            setSelectedState(null);
           }}
         />
       )}
