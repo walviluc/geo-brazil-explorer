@@ -64,8 +64,18 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
     };
 
     const handleMapClick = () => {
-      if (!isLoggedIn && isFree) {
+      if (!isLoggedIn) {
         navigate('/auth');
+        return;
+      }
+      if (!hasAccess) {
+        toast('Acesso ao Catálogo Premium', {
+          description: 'Esta camada faz parte do Catálogo Premium. Faça upgrade para o plano Profissional ou Completo para visualizar.',
+          action: {
+            label: 'Ver Planos',
+            onClick: () => navigate('/subscription'),
+          },
+        });
         return;
       }
       onShowMap();
