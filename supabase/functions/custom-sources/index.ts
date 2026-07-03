@@ -26,9 +26,14 @@ function json(body: unknown, status = 200) {
 type Format = "geojson" | "kml" | "shapefile";
 
 function escapeXml(s: string): string {
-  return String(s).replace(/[<>&'"]/g, (c) => (
-    { "<": "&lt;", ">": "&gt;", "&": "amp;".replace("amp", "&amp"), "'": "&apos;", '"': "&quot;" } as Record<string, string>
-  )[c] || c);
+  const map: Record<string, string> = {
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&apos;",
+    '"': "&quot;",
+  };
+  return String(s).replace(/[&<>'"]/g, (c) => map[c]);
 }
 
 // Minimal GeoJSON -> KML converter (Point/LineString/Polygon + Multi variants).
