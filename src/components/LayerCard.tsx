@@ -149,14 +149,15 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
             size="sm" 
             onClick={handleMapClick} 
             className="flex-1"
-            disabled={!isLoggedIn && !isFree ? false : false}
           >
-            {!isLoggedIn && isFree ? (
+            {!isLoggedIn ? (
               <LogIn className="w-4 h-4 mr-2" />
+            ) : !hasAccess ? (
+              <Lock className="w-4 h-4 mr-2" />
             ) : (
               <Map className="w-4 h-4 mr-2" />
             )}
-            {!isLoggedIn && isFree ? 'Login p/ Ver' : 'Ver Mapa'}
+            {!isLoggedIn ? 'Login p/ Ver' : !hasAccess ? 'Upgrade p/ Ver' : 'Ver Mapa'}
           </Button>
         </div>
         
