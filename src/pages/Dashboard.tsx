@@ -7,9 +7,8 @@ import { DashboardExplorer } from '@/components/DashboardExplorer';
 import { UserMenu } from '@/components/UserMenu';
 
 export default function Dashboard() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { subscription, loading: subLoading } = useSubscription();
-  const { isAdmin } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
