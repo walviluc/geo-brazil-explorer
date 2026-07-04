@@ -12,8 +12,9 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { UF_NAMES } from '@/lib/wms-explorer';
-import { Loader2, Trash2, Upload } from 'lucide-react';
+import { Loader2, Trash2, Upload, MapPin, ShieldAlert, ArrowLeft, Lock, Gift } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
 
 interface Row {
   id: string;
@@ -155,22 +156,35 @@ export default function AdminDataSources() {
     );
   }
 
+  if (!user) return null;
+
   if (!isAdmin) {
     return (
-      <div className="min-h-screen grid place-items-center p-8 text-center">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Acesso restrito</h1>
-          <p className="text-muted-foreground mb-4">
-            Esta área é exclusiva para administradores.
-          </p>
-          <Button onClick={() => navigate('/dashboard')}>Voltar ao Dashboard</Button>
-        </div>
+      <div className="min-h-screen bg-background">
+        <AdminHeader onBack={() => navigate('/dashboard')} />
+        <main className="container mx-auto px-4 py-16">
+          <div className="max-w-md mx-auto text-center p-8 rounded-2xl border bg-card shadow-sm">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 grid place-items-center">
+              <ShieldAlert className="w-8 h-8 text-destructive" />
+            </div>
+            <h1 className="text-2xl font-bold mb-2">Acesso negado</h1>
+            <p className="text-muted-foreground mb-6">
+              Esta área é exclusiva para administradores. Se você acredita que deveria ter acesso, entre em contato com o suporte.
+            </p>
+            <Button onClick={() => navigate('/dashboard')} className="w-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Voltar ao Dashboard
+            </Button>
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen p-6 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-background">
+      <AdminHeader onBack={() => navigate('/dashboard')} />
+      <main className="container mx-auto px-4 py-8 max-w-5xl">
       <h1 className="text-3xl font-bold mb-1">Fontes Personalizadas</h1>
       <p className="text-muted-foreground mb-8">
         Envie shapefiles (.zip) ou GeoJSON (.json/.geojson) por estado. Disponíveis para planos premium.
@@ -224,20 +238,14 @@ export default function AdminDataSources() {
           </div>
         </div>
         <div>
-          <Label className="mb-2 block">Formatos premium (desligado = grátis)</Label>
-          <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={geojsonPremium} onCheckedChange={setGeojsonPremium} />
-              GeoJSON
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={kmlPremium} onCheckedChange={setKmlPremium} />
-              KML
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <Switch checked={shpPremium} onCheckedChange={setShpPremium} />
-              Shapefile
-            </label>
+          <Label className="mb-3 block">Formatos disponíveis</Label>
+          <p className="text-xs text-muted-foreground mb-3">
+            Ligado = <strong className="text-primary">Premium</strong> (planos pagos) · Desligado = <strong className="text-emerald-600 dark:text-emerald-400">Grátis</strong> (todos os usuários)
+          </p>
+          <div className="grid sm:grid-cols-3 gap-3">
+            <FormatToggle label="GeoJSON" premium={geojsonPremium} onChange={setGeojsonPremium} />
+            <FormatToggle label="KML" premium={kmlPremium} onChange={setKmlPremium} />
+            <FormatToggle label="Shapefile" premium={shpPremium} onChange={setShpPremium} />
           </div>
         </div>
         <Button type="submit" disabled={busy} className="w-fit">
@@ -258,29 +266,26 @@ export default function AdminDataSources() {
               {r.description && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
               )}
-              <div className="flex flex-wrap gap-4 mt-3">
-                <label className="flex items-center gap-2 text-xs">
-                  <Switch
-                    checked={r.geojson_premium}
-                    onCheckedChange={(v) => toggleFormat(r, 'geojson_premium', v)}
-                  />
-                  GeoJSON {r.geojson_premium ? 'premium' : 'grátis'}
-                </label>
-                <label className="flex items-center gap-2 text-xs">
-                  <Switch
-                    checked={r.kml_premium}
-                    onCheckedChange={(v) => toggleFormat(r, 'kml_premium', v)}
-                  />
-                  KML {r.kml_premium ? 'premium' : 'grátis'}
-                </label>
-                <label className="flex items-center gap-2 text-xs">
-                  <Switch
-                    checked={r.shapefile_premium}
-                    onCheckedChange={(v) => toggleFormat(r, 'shapefile_premium', v)}
-                    disabled={r.file_format !== 'shapefile'}
-                  />
-                  Shapefile {r.file_format !== 'shapefile' ? '(N/D)' : (r.shapefile_premium ? 'premium' : 'grátis')}
-                </label>
+              <div className="grid sm:grid-cols-3 gap-2 mt-3">
+                <FormatToggle
+                  label="GeoJSON"
+                  premium={r.geojson_premium}
+                  onChange={(v) => toggleFormat(r, 'geojson_premium', v)}
+                  compact
+                />
+                <FormatToggle
+                  label="KML"
+                  premium={r.kml_premium}
+                  onChange={(v) => toggleFormat(r, 'kml_premium', v)}
+                  compact
+                />
+                <FormatToggle
+                  label="Shapefile"
+                  premium={r.shapefile_premium}
+                  onChange={(v) => toggleFormat(r, 'shapefile_premium', v)}
+                  disabled={r.file_format !== 'shapefile'}
+                  compact
+                />
               </div>
             </div>
             <Button variant="ghost" size="icon" onClick={() => handleDelete(r)}>
@@ -292,6 +297,81 @@ export default function AdminDataSources() {
           <p className="text-sm text-muted-foreground">Nenhuma fonte cadastrada ainda.</p>
         )}
       </div>
+      </main>
     </div>
+  );
+}
+
+function AdminHeader({ onBack }: { onBack: () => void }) {
+  useEffect(() => {
+    const prev = document.title;
+    document.title = 'Painel ADM · GeoData Brasil';
+    return () => { document.title = prev; };
+  }, []);
+  return (
+    <header className="sticky top-0 z-40 bg-secondary/95 backdrop-blur-sm border-b border-secondary-foreground/10">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <a href="/" className="flex items-center gap-2">
+            <MapPin className="w-6 h-6 text-primary" />
+            <span className="text-lg font-bold text-secondary-foreground">GeoData Brasil</span>
+          </a>
+          <div className="flex items-center gap-2">
+            <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Painel ADM
+            </span>
+            <Button variant="outline" size="sm" onClick={onBack}>
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+interface FormatToggleProps {
+  label: string;
+  premium: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+  compact?: boolean;
+}
+
+function FormatToggle({ label, premium, onChange, disabled, compact }: FormatToggleProps) {
+  return (
+    <label
+      className={cn(
+        "group relative flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-all cursor-pointer",
+        disabled && "opacity-50 cursor-not-allowed",
+        !disabled && premium && "border-primary/40 bg-primary/5",
+        !disabled && !premium && "border-emerald-500/30 bg-emerald-500/5 dark:bg-emerald-500/10",
+      )}
+    >
+      <div className="flex items-center gap-2 min-w-0">
+        <div
+          className={cn(
+            "flex items-center justify-center w-7 h-7 rounded-md shrink-0 transition-colors",
+            premium ? "bg-primary/15 text-primary" : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+          )}
+        >
+          {premium ? <Lock className="w-3.5 h-3.5" /> : <Gift className="w-3.5 h-3.5" />}
+        </div>
+        <div className="min-w-0">
+          <p className={cn("font-medium leading-tight", compact ? "text-xs" : "text-sm")}>{label}</p>
+          <p
+            className={cn(
+              "text-[11px] font-semibold uppercase tracking-wide leading-tight",
+              premium ? "text-primary" : "text-emerald-600 dark:text-emerald-400",
+            )}
+          >
+            {disabled ? 'Indisponível' : premium ? 'Premium' : 'Grátis'}
+          </p>
+        </div>
+      </div>
+      <Switch checked={premium} onCheckedChange={onChange} disabled={disabled} />
+    </label>
   );
 }
