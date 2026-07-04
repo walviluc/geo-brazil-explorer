@@ -15,6 +15,7 @@ import { UF_NAMES } from '@/lib/wms-explorer';
 import { Loader2, Trash2, Upload, MapPin, ShieldAlert, ArrowLeft, Lock, Gift } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
+import { UserMenu } from '@/components/UserMenu';
 
 interface Row {
   id: string;
@@ -302,7 +303,7 @@ export default function AdminDataSources() {
   );
 }
 
-function AdminHeader({ onBack }: { onBack: () => void }) {
+function AdminHeader({ onBack: _onBack }: { onBack: () => void }) {
   useEffect(() => {
     const prev = document.title;
     document.title = 'Painel ADM · GeoData Brasil';
@@ -316,15 +317,12 @@ function AdminHeader({ onBack }: { onBack: () => void }) {
             <MapPin className="w-6 h-6 text-primary" />
             <span className="text-lg font-bold text-secondary-foreground">GeoData Brasil</span>
           </a>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold">
               <ShieldAlert className="w-3.5 h-3.5" />
               Painel ADM
             </span>
-            <Button variant="outline" size="sm" onClick={onBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
+            <UserMenu showPlanBadge={false} showDashboardLink />
           </div>
         </div>
       </div>

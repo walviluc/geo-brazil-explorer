@@ -1,9 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Database, ArrowRight, CheckCircle } from "lucide-react";
+import { Database, ArrowRight, CheckCircle, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Explorer() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+  const isLoggedIn = !!user && !loading;
 
   const benefits = [
     "Acesso a dados geoespaciais de todos os estados",
@@ -26,7 +29,9 @@ export function Explorer() {
             Explorar Dados Geoespaciais
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Crie sua conta gratuita para acessar nossa base de dados geoespaciais do Brasil
+            {isLoggedIn
+              ? 'Bem-vindo de volta! Acesse seu painel para explorar os dados geoespaciais.'
+              : 'Crie sua conta gratuita para acessar nossa base de dados geoespaciais do Brasil'}
           </p>
 
           {/* Benefits */}
@@ -40,24 +45,42 @@ export function Explorer() {
           </div>
 
           {/* CTA Button */}
-          <Button 
-            size="lg" 
-            onClick={() => navigate('/auth')}
-            className="min-w-[250px] h-14 text-lg"
-          >
-            Criar Conta Gratuita
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-
-          <p className="mt-4 text-sm text-muted-foreground">
-            Já tem uma conta?{' '}
-            <button 
-              onClick={() => navigate('/auth')}
-              className="text-primary hover:underline font-medium"
-            >
-              Fazer login
-            </button>
-          </p>
+          {isLoggedIn ? (
+            <>
+              <Button
+                size="lg"
+                onClick={() => navigate('/dashboard')}
+                className="min-w-[250px] h-14 text-lg"
+              >
+                <LayoutDashboard className="w-5 h-5 mr-2" />
+                Acessar Dashboard
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Prossiga direto para os dados do seu plano.
+              </p>
+            </>
+          ) : (
+            <>
+              <Button
+                size="lg"
+                onClick={() => navigate('/auth')}
+                className="min-w-[250px] h-14 text-lg"
+              >
+                Criar Conta Gratuita
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Já tem uma conta?{' '}
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="text-primary hover:underline font-medium"
+                >
+                  Fazer login
+                </button>
+              </p>
+            </>
+          )}
         </div>
       </div>
     </section>
