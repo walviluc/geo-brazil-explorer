@@ -5,6 +5,17 @@ import { MapPin, LogOut, User, Crown, CreditCard } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription } from '@/hooks/useSubscription';
 import { DashboardExplorer } from '@/components/DashboardExplorer';
+import { useUserRole } from '@/hooks/useUserRole';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Shield } from 'lucide-react';
 
 const planLabels: Record<string, { label: string; color: string; icon: typeof Crown }> = {
   gratuito: { label: 'Plano Gratuito', color: 'bg-muted text-muted-foreground', icon: User },
@@ -15,6 +26,7 @@ const planLabels: Record<string, { label: string; color: string; icon: typeof Cr
 export default function Dashboard() {
   const { user, loading: authLoading, signOut } = useAuth();
   const { subscription, loading: subLoading } = useSubscription();
+  const { isAdmin } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -58,21 +70,50 @@ export default function Dashboard() {
                 <PlanIcon className="w-4 h-4" />
                 {planInfo.label}
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/subscription')}
-                className="hidden md:flex items-center gap-2"
-              >
-                <CreditCard className="w-4 h-4" />
-                Gerenciar Plano
-              </Button>
-              
-              <Button variant="ghost" size="sm" onClick={handleSignOut}>
-                <LogOut className="w-4 h-4 mr-2" />
-                <span className="hidden md:inline">Sair</span>
-              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="flex items-center gap-2 text-secondary-foreground hover:bg-secondary-foreground/10">
+                    <Avatar className="w-8 h-8">
+                      <AvatarFallback className="bg-primary/20 text-primary text-sm font-medium">
+                        {(user.user_metadata?.full_name || user.email || '?').charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="hidden md:inline max-w-[160px] truncate">
+                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 bg-popover">
+                  <DropdownMenuLabel className="truncate">
+                    {user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Meu perfil
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="w-4 h-4 mr-2" />
+                    Minha conta
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/subscription')}>
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    Gerenciar plano
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin/data-sources')}>
+                      <Shield className="w-4 h-4 mr-2" />
+                      Painel ADM
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sair
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
