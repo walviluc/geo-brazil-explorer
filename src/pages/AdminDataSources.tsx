@@ -318,6 +318,12 @@ function AdminHeader({ onBack: _onBack }: { onBack: () => void }) {
             <span className="text-lg font-bold text-secondary-foreground">GeoData Brasil</span>
           </a>
           <div className="flex items-center gap-3">
+            <a
+              href="/admin/plans"
+              className="hidden sm:inline-flex text-sm font-medium text-secondary-foreground/80 hover:text-secondary-foreground"
+            >
+              Planos
+            </a>
             <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-semibold">
               <ShieldAlert className="w-3.5 h-3.5" />
               Painel ADM
