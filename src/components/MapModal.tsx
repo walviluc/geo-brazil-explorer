@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin, ZoomIn } from "lucide-react";
+import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin, ZoomIn, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layer, downloadLayerAsGeoJSON, FEATURES_PER_PAGE } from "@/lib/wms-explorer";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { WmsManager, CustomWmsSource, loadStoredWmsSources } from "./WmsManager";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -155,6 +156,9 @@ export function MapModal({ layer, onClose }: MapModalProps) {
   const vectorLayerRef = useRef<L.GeoJSON | null>(null);
   const allFeaturesRef = useRef<GeoJSON.Feature[]>([]);
   const featureLayersMapRef = useRef<Map<GeoJSON.Feature, L.Layer>>(new Map());
+  const customLayersRef = useRef<Map<string, L.TileLayer.WMS>>(new Map());
+  const [customSources, setCustomSources] = useState<CustomWmsSource[]>(() => loadStoredWmsSources());
+  const [showWmsManager, setShowWmsManager] = useState(false);
 
   // Inject custom popup styles
   useEffect(() => {
@@ -507,6 +511,40 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     }
   }, [showVectorLayer]);
 
+  // Sync custom WMS overlays with the map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const activeIds = new Set(customSources.map((s) => s.id));
+    // Remove layers no longer present
+    customLayersRef.current.forEach((lyr, id) => {
+      if (!activeIds.has(id)) {
+        lyr.remove();
+        customLayersRef.current.delete(id);
+      }
+    });
+    // Add or update
+    customSources.forEach((s) => {
+      let lyr = customLayersRef.current.get(s.id);
+      if (!lyr) {
+        lyr = L.tileLayer.wms(s.url, {
+          layers: s.layerName,
+          format: "image/png",
+          transparent: true,
+          version: "1.1.1",
+          attribution: "",
+          opacity: s.opacity,
+        });
+        customLayersRef.current.set(s.id, lyr);
+      } else {
+        lyr.setOpacity(s.opacity);
+      }
+      const isOnMap = map.hasLayer(lyr);
+      if (s.visible && !isOnMap) lyr.addTo(map);
+      if (!s.visible && isOnMap) lyr.remove();
+    });
+  }, [customSources]);
+
   return (
     <div 
       className="fixed inset-0 z-50 bg-secondary/80 backdrop-blur-sm flex items-center justify-center p-4"
@@ -569,7 +607,40 @@ export function MapModal({ layer, onClose }: MapModalProps) {
               {showVectorLayer ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
               <span>Vetorial</span>
             </button>
+            {customSources.map((s) => (
+              <button
+                key={s.id}
+                onClick={() =>
+                  setCustomSources((prev) =>
+                    prev.map((p) => (p.id === s.id ? { ...p, visible: !p.visible } : p)),
+                  )
+                }
+                className={`flex items-center gap-2 w-full px-2 py-1.5 text-sm transition-colors ${
+                  s.visible ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+                }`}
+                title={s.layerName}
+              >
+                {s.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                <span className="truncate max-w-[140px]">{s.title}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => setShowWmsManager(true)}
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-foreground hover:bg-muted border-t border-border mt-1 pt-2"
+            >
+              <FolderPlus className="w-4 h-4" />
+              <span>Gerenciar WMS</span>
+            </button>
           </div>
+
+          {/* WMS Manager Panel */}
+          {showWmsManager && (
+            <WmsManager
+              sources={customSources}
+              onChange={setCustomSources}
+              onClose={() => setShowWmsManager(false)}
+            />
+          )}
 
           {/* Overlapping Features Panel */}
           {overlappingFeatures.length > 1 && (
