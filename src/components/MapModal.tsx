@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
-import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin, ZoomIn } from "lucide-react";
+import { X, Loader2, AlertCircle, Layers, Eye, EyeOff, Plus, MapPin, ZoomIn, FolderPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Layer, downloadLayerAsGeoJSON, FEATURES_PER_PAGE } from "@/lib/wms-explorer";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { WmsManager, CustomWmsSource, loadStoredWmsSources } from "./WmsManager";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
@@ -155,6 +156,9 @@ export function MapModal({ layer, onClose }: MapModalProps) {
   const vectorLayerRef = useRef<L.GeoJSON | null>(null);
   const allFeaturesRef = useRef<GeoJSON.Feature[]>([]);
   const featureLayersMapRef = useRef<Map<GeoJSON.Feature, L.Layer>>(new Map());
+  const customLayersRef = useRef<Map<string, L.TileLayer.WMS>>(new Map());
+  const [customSources, setCustomSources] = useState<CustomWmsSource[]>(() => loadStoredWmsSources());
+  const [showWmsManager, setShowWmsManager] = useState(false);
 
   // Inject custom popup styles
   useEffect(() => {
