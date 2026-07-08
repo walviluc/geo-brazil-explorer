@@ -607,7 +607,40 @@ export function MapModal({ layer, onClose }: MapModalProps) {
               {showVectorLayer ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
               <span>Vetorial</span>
             </button>
+            {customSources.map((s) => (
+              <button
+                key={s.id}
+                onClick={() =>
+                  setCustomSources((prev) =>
+                    prev.map((p) => (p.id === s.id ? { ...p, visible: !p.visible } : p)),
+                  )
+                }
+                className={`flex items-center gap-2 w-full px-2 py-1.5 text-sm transition-colors ${
+                  s.visible ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
+                }`}
+                title={s.layerName}
+              >
+                {s.visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                <span className="truncate max-w-[140px]">{s.title}</span>
+              </button>
+            ))}
+            <button
+              onClick={() => setShowWmsManager(true)}
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-sm text-foreground hover:bg-muted border-t border-border mt-1 pt-2"
+            >
+              <FolderPlus className="w-4 h-4" />
+              <span>Gerenciar WMS</span>
+            </button>
           </div>
+
+          {/* WMS Manager Panel */}
+          {showWmsManager && (
+            <WmsManager
+              sources={customSources}
+              onChange={setCustomSources}
+              onClose={() => setShowWmsManager(false)}
+            />
+          )}
 
           {/* Overlapping Features Panel */}
           {overlappingFeatures.length > 1 && (
