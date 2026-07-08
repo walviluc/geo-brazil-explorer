@@ -143,6 +143,41 @@ export const DATA_SOURCES: DataSource[] = [
     url: 'https://geoserver.iphan.gov.br/geoserver/ows',
     category: 'social',
   },
+  {
+    id: 'sicar',
+    label: 'SICAR — Cadastro Ambiental Rural',
+    description: 'Imóveis rurais inscritos no CAR: perímetros, APP, reserva legal e uso consolidado.',
+    url: 'https://geoserver.car.gov.br/geoserver/ows',
+    category: 'ambiente',
+  },
+  {
+    id: 'sicar-analise',
+    label: 'SICAR — Análise e Situação dos Lotes',
+    description: 'Camadas auxiliares do SICAR para análise da situação de cadastros em processo (pendentes, analisados, sobreposições).',
+    url: 'https://geoserver.car.gov.br/geoserver/sicar/ows',
+    category: 'ambiente',
+  },
+  {
+    id: 'incra-sigef',
+    label: 'INCRA — SIGEF (Malha Fundiária)',
+    description: 'Parcelas certificadas no SIGEF, essenciais para cruzamento com CAR e análise de sobreposições fundiárias.',
+    url: 'https://acervofundiario.incra.gov.br/geoserver/ows',
+    category: 'territorio',
+  },
+  {
+    id: 'incra-snci',
+    label: 'INCRA — SNCI (Certificação de Imóveis)',
+    description: 'Imóveis certificados pelo Sistema Nacional de Certificação de Imóveis, complementar à análise SICAR.',
+    url: 'https://certificacao.incra.gov.br/geoserver/ows',
+    category: 'territorio',
+  },
+  {
+    id: 'mapbiomas',
+    label: 'MapBiomas — Uso e Cobertura da Terra',
+    description: 'Séries anuais de uso do solo, alertas de desmatamento e cicatrizes de fogo — apoio à análise de lotes CAR.',
+    url: 'https://plataforma.brasil.mapbiomas.org/geoserver/ows',
+    category: 'ambiente',
+  },
 ];
 
 export const DEFAULT_SOURCE = DATA_SOURCES[0];
