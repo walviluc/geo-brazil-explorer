@@ -511,6 +511,40 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     }
   }, [showVectorLayer]);
 
+  // Sync custom WMS overlays with the map
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const activeIds = new Set(customSources.map((s) => s.id));
+    // Remove layers no longer present
+    customLayersRef.current.forEach((lyr, id) => {
+      if (!activeIds.has(id)) {
+        lyr.remove();
+        customLayersRef.current.delete(id);
+      }
+    });
+    // Add or update
+    customSources.forEach((s) => {
+      let lyr = customLayersRef.current.get(s.id);
+      if (!lyr) {
+        lyr = L.tileLayer.wms(s.url, {
+          layers: s.layerName,
+          format: "image/png",
+          transparent: true,
+          version: "1.1.1",
+          attribution: "",
+          opacity: s.opacity,
+        });
+        customLayersRef.current.set(s.id, lyr);
+      } else {
+        lyr.setOpacity(s.opacity);
+      }
+      const isOnMap = map.hasLayer(lyr);
+      if (s.visible && !isOnMap) lyr.addTo(map);
+      if (!s.visible && isOnMap) lyr.remove();
+    });
+  }, [customSources]);
+
   return (
     <div 
       className="fixed inset-0 z-50 bg-secondary/80 backdrop-blur-sm flex items-center justify-center p-4"
