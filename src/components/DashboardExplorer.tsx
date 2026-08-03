@@ -1,12 +1,10 @@
 import { useState, useEffect, forwardRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Search, Database, Layers, RefreshCw, Globe } from "lucide-react";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Loader2, Search, Database, Layers, RefreshCw } from "lucide-react";
 import { fetchLayers, groupLayersByState, Layer, UF_NAMES, PlanType } from "@/lib/wms-explorer";
-import { DATA_SOURCES, DEFAULT_SOURCE, getSourceById } from "@/lib/data-sources";
+import { DEFAULT_SOURCE, getSourceById } from "@/lib/data-sources";
+import { SourcePicker } from "./SourcePicker";
 import { StateCard } from "./StateCard";
 import { StateModal } from "./StateModal";
 import { MapModal } from "./MapModal";
@@ -76,27 +74,7 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
       </div>
 
       {/* Data source selector */}
-      <div className="max-w-2xl mx-auto mb-6">
-        <label className="flex items-center gap-2 text-sm font-medium text-foreground mb-2">
-          <Globe className="w-4 h-4" />
-          Fonte de dados
-        </label>
-        <Select value={sourceId} onValueChange={setSourceId}>
-          <SelectTrigger className="h-12">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="max-h-[400px]">
-            {DATA_SOURCES.map(src => (
-              <SelectItem key={src.id} value={src.id}>
-                <div className="flex flex-col text-left">
-                  <span className="font-medium">{src.label}</span>
-                  <span className="text-xs text-muted-foreground">{src.description}</span>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <SourcePicker value={sourceId} onChange={setSourceId} />
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -113,7 +91,7 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
           ) : (
             <Database className="w-5 h-5 mr-2" />
           )}
-          {loading ? 'Carregando...' : layers.length > 0 ? 'Atualizar Dados' : 'Carregar Camadas'}
+          {loading ? 'Carregando...' : layers.length > 0 ? 'Atualizar Dados' : `Carregar ${currentSource.label.split(' — ')[0]}`}
         </Button>
         
         {layers.length > 0 && (
