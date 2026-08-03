@@ -122,13 +122,6 @@ export const DATA_SOURCES: DataSource[] = [
     url: 'https://geoserver.iphan.gov.br/geoserver/ows',
     category: 'social',
   },
-  {
-    id: 'sicar-analise',
-    label: 'SICAR — Cadastro Ambiental Rural',
-    description: 'Imóveis rurais inscritos no CAR por estado: perímetros e situação dos cadastros em processo.',
-    url: 'https://geoserver.car.gov.br/geoserver/sicar/ows',
-    category: 'ambiente',
-  },
 ];
 
 export const DEFAULT_SOURCE = DATA_SOURCES[0];

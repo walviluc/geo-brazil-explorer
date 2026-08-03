@@ -12,7 +12,6 @@ const ALLOWED_HOSTS = [
   "sistemas.florestal.gov.br",
   "sistemas.anatel.gov.br",
   "geoserver.iphan.gov.br",
-  "geoserver.car.gov.br",
 ];
 
 const corsHeaders = {
