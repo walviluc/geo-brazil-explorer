@@ -5,15 +5,14 @@ const ALLOWED_HOSTS = [
   "geoservicos.ibge.gov.br",
   "geoservicoscenso2022.ibge.gov.br",
   "terrabrasilis.dpi.inpe.br",
-  "siscom.ibama.gov.br",
   "geoservicos.inde.gov.br",
-  "geoserver.funai.gov.br",
   "gishub.anp.gov.br",
   "geoservicos.sgb.gov.br",
   "geoinfo.dados.embrapa.br",
   "sistemas.florestal.gov.br",
   "sistemas.anatel.gov.br",
   "geoserver.iphan.gov.br",
+  "geoserver.car.gov.br",
 ];
 
 const corsHeaders = {
