@@ -9,10 +9,10 @@ export function Explorer() {
   const isLoggedIn = !!user && !loading;
 
   const benefits = [
-    "Acesso a dados geoespaciais de todos os estados",
-    "Download em formato GeoJSON",
-    "Visualização interativa no mapa",
-    "Atualizações constantes de dados"
+    "13 fontes públicas oficiais, 100% gratuitas",
+    "Download em GeoJSON, KML e Shapefile",
+    "Mapa interativo com gerenciador WMS",
+    "Catálogo Premium curado por estado (planos pagos)"
   ];
 
   return (

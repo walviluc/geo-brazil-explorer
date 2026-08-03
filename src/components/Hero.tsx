@@ -7,8 +7,8 @@ export function Hero() {
     document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const scrollToPricing = () => {
-    document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToPremium = () => {
+    document.getElementById('premium')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -34,8 +34,8 @@ export function Hero() {
         </h1>
         
         <p className="text-lg md:text-xl text-secondary-foreground/80 max-w-3xl mx-auto mb-8 leading-relaxed">
-          Todos os dados públicos oficiais do Brasil — IBGE, INPE, IBAMA, FUNAI, ICMBio e mais —
-          gratuitos, em formato GeoJSON. Planos pagos apenas para o Catálogo Premium interno.
+          Todos os dados públicos oficiais do Brasil — IBGE, INPE, ICMBio, MMA, ANP, CPRM, EMBRAPA e mais —
+          gratuitos, em GeoJSON, KML e Shapefile. Planos pagos apenas para o Catálogo Premium interno.
         </p>
         
         {/* Stats */}
@@ -45,8 +45,8 @@ export function Hero() {
               <Database className="w-6 h-6 text-primary" />
             </div>
             <div className="text-left">
-              <p className="text-2xl font-bold text-secondary-foreground">500+</p>
-              <p className="text-sm text-secondary-foreground/70">Camadas de Dados</p>
+              <p className="text-2xl font-bold text-secondary-foreground">13</p>
+              <p className="text-sm text-secondary-foreground/70">Fontes Oficiais</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -74,8 +74,8 @@ export function Hero() {
           <Button size="lg" onClick={scrollToExplorer} className="text-lg px-8 py-6">
             Explorar Dados Gratuitos
           </Button>
-          <Button size="lg" variant="outline" onClick={scrollToPricing} className="text-lg px-8 py-6 border-primary/30 text-secondary-foreground hover:bg-primary/10">
-            Ver Planos de Acesso
+          <Button size="lg" variant="outline" onClick={scrollToPremium} className="text-lg px-8 py-6 border-primary/30 text-secondary-foreground hover:bg-primary/10">
+            Conhecer o Catálogo Premium
           </Button>
         </div>
       </div>

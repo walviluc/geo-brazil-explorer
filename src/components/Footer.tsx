@@ -12,8 +12,9 @@ export function Footer() {
               <span className="text-xl font-bold text-secondary-foreground">GeoData Brasil</span>
             </div>
             <p className="text-secondary-foreground/70 max-w-md">
-              Sua plataforma de consulta de dados geoespaciais do Brasil. 
-              Acesse informações oficiais de todos os estados brasileiros em um só lugar.
+              Portal de consulta, visualização e download de dados geoespaciais do Brasil.
+              Fontes públicas oficiais gratuitas em GeoJSON, KML e Shapefile, mais um Catálogo
+              Premium com shapefiles curados por estado.
             </p>
           </div>
           
@@ -22,9 +23,8 @@ export function Footer() {
             <h4 className="font-semibold text-secondary-foreground mb-4">Links</h4>
             <ul className="space-y-2 text-secondary-foreground/70">
               <li><a href="#explorer" className="hover:text-primary transition-colors">Explorar Dados</a></li>
+              <li><a href="#premium" className="hover:text-primary transition-colors">Catálogo Premium</a></li>
               <li><a href="#pricing" className="hover:text-primary transition-colors">Planos</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Documentação</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">API</a></li>
             </ul>
           </div>
           
