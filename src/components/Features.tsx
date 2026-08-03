@@ -1,35 +1,35 @@
-import { Map, Download, Filter, Globe, Layers, Lock } from "lucide-react";
+import { Map, Download, Filter, Globe, Layers, Crown } from "lucide-react";
 
 const features = [
   {
     icon: Globe,
-    title: "Cobertura Nacional",
-    description: "Dados geoespaciais de todos os 27 estados brasileiros organizados por região e tema."
+    title: "13 fontes oficiais conectadas",
+    description: "IBGE, INPE, ICMBio, MMA, ANP, CPRM, EMBRAPA, MAPA, SFB, DNIT, ANATEL e IPHAN — organizados por estado e tema."
   },
   {
     icon: Layers,
-    title: "Múltiplas Camadas",
-    description: "Unidades de conservação, áreas de uso restrito, territórios indígenas, CAR e muito mais."
+    title: "Gerenciador WMS próprio",
+    description: "Adicione seus próprios serviços WMS ao mapa, com controle de visibilidade e opacidade por camada."
   },
   {
     icon: Download,
-    title: "Download GeoJSON",
-    description: "Baixe os dados em formato GeoJSON pronto para uso em GIS, mapas e análises."
+    title: "GeoJSON, KML e Shapefile",
+    description: "Baixe cada camada no formato que preferir, pronto para QGIS, ArcGIS ou Google Earth."
   },
   {
     icon: Map,
-    title: "Visualização no Mapa",
-    description: "Visualize as camadas diretamente no navegador antes de fazer o download."
+    title: "Mapa interativo",
+    description: "Explore as feições no navegador, consulte atributos e sobreponha camadas antes de baixar."
   },
   {
     icon: Filter,
-    title: "Busca Inteligente",
-    description: "Encontre rapidamente as camadas que precisa com filtros por estado e tema."
+    title: "Busca e filtros por fonte",
+    description: "Seletor de fontes em cards com busca, categorias temáticas e agrupamento automático por UF."
   },
   {
-    icon: Lock,
-    title: "Dados Oficiais",
-    description: "Informações provenientes de fontes oficiais do governo brasileiro."
+    icon: Crown,
+    title: "Catálogo Premium interno",
+    description: "Shapefiles curados por estado, hospedados na plataforma, para os planos Profissional e Completo."
   }
 ];
 
@@ -39,10 +39,10 @@ export function Features() {
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Tudo que você precisa em um só lugar
+            O que o portal faz por você
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Plataforma completa para consulta e download de dados geoespaciais do Brasil
+            Consulta, visualização e download de dados geoespaciais do Brasil — dados públicos gratuitos e um catálogo premium curado
           </p>
         </div>
         
