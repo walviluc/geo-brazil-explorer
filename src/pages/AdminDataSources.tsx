@@ -12,7 +12,10 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { UF_NAMES } from '@/lib/wms-explorer';
-import { Loader2, Trash2, Upload, MapPin, ShieldAlert, ArrowLeft, Lock, Gift } from 'lucide-react';
+import { Loader2, Trash2, Upload, MapPin, ShieldAlert, ArrowLeft, Lock, Gift, Pencil, Save } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/UserMenu';
