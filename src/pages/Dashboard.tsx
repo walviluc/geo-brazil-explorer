@@ -47,11 +47,14 @@ export default function Dashboard() {
       {/* Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
+          <p className="text-sm text-muted-foreground mb-1">
+            Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}
+          </p>
           <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Olá, {user.user_metadata?.full_name || user.email?.split('@')[0]}!
+            Geodados por UF
           </h1>
           <p className="text-muted-foreground">
-            Explore os dados geoespaciais disponíveis no seu plano.
+            Explore camadas geoespaciais organizadas por estado brasileiro
           </p>
         </div>
         
