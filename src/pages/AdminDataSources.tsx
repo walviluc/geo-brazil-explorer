@@ -293,9 +293,16 @@ export default function AdminDataSources() {
         {rows.map(r => (
           <div key={r.id} className="p-4 rounded-lg border bg-card flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="font-medium truncate">{r.name}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {r.uf || 'Nacional'} · {r.layer_name} · {r.file_format} · plano {r.required_plan}
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="shrink-0 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold font-mono">
+                  {r.uf || 'BR'}
+                </span>
+                <p className="font-medium truncate">
+                  {r.name} <span className="text-muted-foreground font-normal">— {r.uf ? UF_NAMES[r.uf] ?? r.uf : 'Nacional'}</span>
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                {r.layer_name} · {r.file_format} · plano {r.required_plan}
               </p>
               {r.description && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
@@ -322,15 +329,90 @@ export default function AdminDataSources() {
                 />
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => handleDelete(r)}>
-              <Trash2 className="w-4 h-4 text-destructive" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon" aria-label="Editar fonte" onClick={() => setEditing(r)}>
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" aria-label="Remover fonte" onClick={() => handleDelete(r)}>
+                <Trash2 className="w-4 h-4 text-destructive" />
+              </Button>
+            </div>
           </div>
         ))}
         {rows.length === 0 && (
           <p className="text-sm text-muted-foreground">Nenhuma fonte cadastrada ainda.</p>
         )}
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar fonte</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="grid gap-4">
+              <div>
+                <Label>Nome da fonte</Label>
+                <Input
+                  value={editing.name}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Nome técnico da camada</Label>
+                <Input
+                  value={editing.layer_name}
+                  onChange={(e) => setEditing({ ...editing, layer_name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  value={editing.description ?? ''}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>UF</Label>
+                  <Select
+                    value={editing.uf ?? 'BR'}
+                    onValueChange={(v) => setEditing({ ...editing, uf: v === 'BR' ? null : v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BR">Nacional</SelectItem>
+                      {Object.entries(UF_NAMES).map(([code, n]) => (
+                        <SelectItem key={code} value={code}>{code} — {n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Plano mínimo</Label>
+                  <Select
+                    value={editing.required_plan}
+                    onValueChange={(v) => setEditing({ ...editing, required_plan: v as Row['required_plan'] })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="profissional">Profissional</SelectItem>
+                      <SelectItem value="completo">Completo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
+            <Button onClick={saveEdit} disabled={savingEdit}>
+              {savingEdit ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </main>
     </div>
   );
