@@ -12,7 +12,10 @@ import {
 } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import { UF_NAMES } from '@/lib/wms-explorer';
-import { Loader2, Trash2, Upload, MapPin, ShieldAlert, ArrowLeft, Lock, Gift } from 'lucide-react';
+import { Loader2, Trash2, Upload, MapPin, ShieldAlert, ArrowLeft, Lock, Gift, Pencil, Save } from 'lucide-react';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { cn } from '@/lib/utils';
 import { UserMenu } from '@/components/UserMenu';
@@ -39,6 +42,8 @@ export default function AdminDataSources() {
 
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Form
   const [name, setName] = useState('');
@@ -147,6 +152,34 @@ export default function AdminDataSources() {
       toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
       setRows(prev => prev.map(r => r.id === row.id ? { ...r, [field]: !value } : r));
     }
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    if (!editing.name.trim() || !editing.layer_name.trim()) {
+      toast({ title: 'Campos obrigatórios', description: 'Nome e camada.', variant: 'destructive' });
+      return;
+    }
+    setSavingEdit(true);
+    const patch = {
+      name: editing.name.trim(),
+      description: editing.description?.trim() || null,
+      uf: editing.uf || null,
+      layer_name: editing.layer_name.trim(),
+      required_plan: editing.required_plan,
+    };
+    const { error } = await supabase
+      .from('custom_data_sources')
+      .update(patch)
+      .eq('id', editing.id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRows(prev => prev.map(r => (r.id === editing.id ? { ...r, ...patch } : r)));
+    setEditing(null);
+    toast({ title: 'Fonte atualizada' });
   };
 
   if (authLoading || roleLoading) {
@@ -260,9 +293,16 @@ export default function AdminDataSources() {
         {rows.map(r => (
           <div key={r.id} className="p-4 rounded-lg border bg-card flex items-start justify-between gap-4">
             <div className="min-w-0">
-              <p className="font-medium truncate">{r.name}</p>
-              <p className="text-xs text-muted-foreground truncate">
-                {r.uf || 'Nacional'} · {r.layer_name} · {r.file_format} · plano {r.required_plan}
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="shrink-0 px-2 py-0.5 rounded-md bg-primary/10 text-primary text-[11px] font-bold font-mono">
+                  {r.uf || 'BR'}
+                </span>
+                <p className="font-medium truncate">
+                  {r.name} <span className="text-muted-foreground font-normal">— {r.uf ? UF_NAMES[r.uf] ?? r.uf : 'Nacional'}</span>
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground truncate mt-0.5">
+                {r.layer_name} · {r.file_format} · plano {r.required_plan}
               </p>
               {r.description && (
                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{r.description}</p>
@@ -289,15 +329,90 @@ export default function AdminDataSources() {
                 />
               </div>
             </div>
-            <Button variant="ghost" size="icon" onClick={() => handleDelete(r)}>
-              <Trash2 className="w-4 h-4 text-destructive" />
-            </Button>
+            <div className="flex items-center gap-1 shrink-0">
+              <Button variant="ghost" size="icon" aria-label="Editar fonte" onClick={() => setEditing(r)}>
+                <Pencil className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="icon" aria-label="Remover fonte" onClick={() => handleDelete(r)}>
+                <Trash2 className="w-4 h-4 text-destructive" />
+              </Button>
+            </div>
           </div>
         ))}
         {rows.length === 0 && (
           <p className="text-sm text-muted-foreground">Nenhuma fonte cadastrada ainda.</p>
         )}
       </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Editar fonte</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="grid gap-4">
+              <div>
+                <Label>Nome da fonte</Label>
+                <Input
+                  value={editing.name}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Nome técnico da camada</Label>
+                <Input
+                  value={editing.layer_name}
+                  onChange={(e) => setEditing({ ...editing, layer_name: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  value={editing.description ?? ''}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                />
+              </div>
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <Label>UF</Label>
+                  <Select
+                    value={editing.uf ?? 'BR'}
+                    onValueChange={(v) => setEditing({ ...editing, uf: v === 'BR' ? null : v })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BR">Nacional</SelectItem>
+                      {Object.entries(UF_NAMES).map(([code, n]) => (
+                        <SelectItem key={code} value={code}>{code} — {n}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Plano mínimo</Label>
+                  <Select
+                    value={editing.required_plan}
+                    onValueChange={(v) => setEditing({ ...editing, required_plan: v as Row['required_plan'] })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="profissional">Profissional</SelectItem>
+                      <SelectItem value="completo">Completo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditing(null)}>Cancelar</Button>
+            <Button onClick={saveEdit} disabled={savingEdit}>
+              {savingEdit ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       </main>
     </div>
   );
