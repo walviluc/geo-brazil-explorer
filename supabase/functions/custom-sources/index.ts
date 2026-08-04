@@ -124,13 +124,8 @@ Deno.serve(async (req) => {
       if (rowErr) return json({ error: rowErr.message }, 400);
       if (!row) return json({ error: "Fonte não encontrada ou acesso negado." }, 404);
 
-      // Per-format premium enforcement.
-      const isPremiumFormat =
-        (fmt === "geojson" && row.geojson_premium) ||
-        (fmt === "kml" && row.kml_premium) ||
-        (fmt === "shapefile" && row.shapefile_premium);
-
-      if (isPremiumFormat) {
+      // Internal catalog: every download format requires a paid plan.
+      {
         const { data: authData } = await supabase.auth.getUser();
         const uid = authData?.user?.id;
         if (!uid) return json({ error: "Não autenticado." }, 401);
