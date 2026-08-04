@@ -60,7 +60,7 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
   const orderedStates = [...groups.keys()]
     .filter(k => k !== 'OUTROS' && UF_NAMES[k])
     .sort()
-    .concat(groups.has('OUTROS') ? ['OUTROS'] : []);
+    .concat(!currentSource.internal && groups.has('OUTROS') ? ['OUTROS'] : []);
 
   return (
     <section ref={ref} className="py-8">
