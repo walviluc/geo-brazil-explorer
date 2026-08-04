@@ -46,15 +46,12 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
     // Whether the currently-selected format is locked behind a paid plan.
     // External (public) sources are always free. Internal sources check the
     // per-format flag from the admin panel.
-    const currentFormatIsPremium = isPremium
-      ? !!premiumFormats?.[format]
-      : false;
+    // Every format of the internal (premium) catalog requires a paid plan.
+    const currentFormatIsPremium = isPremium;
     const canDownloadCurrent = !currentFormatIsPremium || hasPlanAccess;
 
     // "Ver Mapa" still gates on any-format access to the source.
-    const anyPremium = isPremium && !!(
-      premiumFormats?.geojson || premiumFormats?.kml || premiumFormats?.shapefile
-    );
+    const anyPremium = isPremium;
     const hasMapAccess = !anyPremium || hasPlanAccess;
 
     // Shapefile is only available when the internal file is stored as .zip.
@@ -168,9 +165,9 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
     };
 
     const formatOptions: Array<{ value: DownloadFormat; label: string; premium: boolean; disabled?: boolean }> = [
-      { value: 'geojson', label: 'GeoJSON (.geojson)', premium: !!(isPremium && premiumFormats?.geojson) },
-      { value: 'kml', label: 'KML (Google Earth)', premium: !!(isPremium && premiumFormats?.kml) },
-      { value: 'shapefile', label: 'Shapefile (.zip)', premium: !!(isPremium && premiumFormats?.shapefile), disabled: !shapefileAvailable },
+      { value: 'geojson', label: 'GeoJSON (.geojson)', premium: isPremium },
+      { value: 'kml', label: 'KML (Google Earth)', premium: isPremium },
+      { value: 'shapefile', label: 'Shapefile (.zip)', premium: isPremium, disabled: !shapefileAvailable },
     ];
 
     return (
