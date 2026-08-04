@@ -42,6 +42,8 @@ export default function AdminDataSources() {
 
   const [rows, setRows] = useState<Row[]>([]);
   const [busy, setBusy] = useState(false);
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
 
   // Form
   const [name, setName] = useState('');
@@ -150,6 +152,34 @@ export default function AdminDataSources() {
       toast({ title: 'Erro ao atualizar', description: error.message, variant: 'destructive' });
       setRows(prev => prev.map(r => r.id === row.id ? { ...r, [field]: !value } : r));
     }
+  };
+
+  const saveEdit = async () => {
+    if (!editing) return;
+    if (!editing.name.trim() || !editing.layer_name.trim()) {
+      toast({ title: 'Campos obrigatórios', description: 'Nome e camada.', variant: 'destructive' });
+      return;
+    }
+    setSavingEdit(true);
+    const patch = {
+      name: editing.name.trim(),
+      description: editing.description?.trim() || null,
+      uf: editing.uf || null,
+      layer_name: editing.layer_name.trim(),
+      required_plan: editing.required_plan,
+    };
+    const { error } = await supabase
+      .from('custom_data_sources')
+      .update(patch)
+      .eq('id', editing.id);
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      return;
+    }
+    setRows(prev => prev.map(r => (r.id === editing.id ? { ...r, ...patch } : r)));
+    setEditing(null);
+    toast({ title: 'Fonte atualizada' });
   };
 
   if (authLoading || roleLoading) {
