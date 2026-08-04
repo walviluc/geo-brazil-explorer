@@ -14,6 +14,8 @@ export interface Layer {
   premiumFormats?: { geojson: boolean; kml: boolean; shapefile: boolean };
   /** Stored file format for internal sources (drives shapefile availability). */
   storedFormat?: "geojson" | "shapefile";
+  /** Explicit UF assigned by the source (internal catalog). */
+  uf?: string | null;
 }
 
 export interface BoundingBox {
@@ -201,6 +203,7 @@ export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promi
         shapefile: !!it.shapefile_premium,
       },
       storedFormat: it.file_format ?? "geojson",
+      uf: it.uf ? it.uf.toUpperCase() : null,
     }));
   }
 
@@ -420,7 +423,11 @@ export function groupLayersByState(layers: Layer[]): Map<string, Layer[]> {
   const groups = new Map<string, Layer[]>();
   
   layers.forEach(layer => {
-    const uf = getUF(layer.name) || getUF(layer.title) || 'OUTROS';
+    const uf =
+      (layer.uf && UF_NAMES[layer.uf.toUpperCase()] ? layer.uf.toUpperCase() : null) ||
+      getUF(layer.name) ||
+      getUF(layer.title) ||
+      'OUTROS';
     if (!groups.has(uf)) groups.set(uf, []);
     groups.get(uf)!.push(layer);
   });
