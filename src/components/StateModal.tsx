@@ -1,7 +1,8 @@
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LayerCard } from "./LayerCard";
+import { LayerDetailsPanel } from "./LayerDetailsPanel";
 import { Layer, UF_NAMES, PlanType } from "@/lib/wms-explorer";
 
 interface StateModalProps {
@@ -15,6 +16,7 @@ interface StateModalProps {
 export const StateModal = forwardRef<HTMLDivElement, StateModalProps>(
   function StateModal({ uf, layers, userPlan, onClose, onShowMap }, ref) {
     const stateName = uf === 'OUTROS' ? 'Outros' : UF_NAMES[uf] || uf;
+    const [detailsLayer, setDetailsLayer] = useState<Layer | null>(null);
 
     return (
       <div 
@@ -52,11 +54,21 @@ export const StateModal = forwardRef<HTMLDivElement, StateModalProps>(
                   premiumFormats={layer.premiumFormats}
                   storedFormat={layer.storedFormat}
                   onShowMap={() => onShowMap(layer)}
+                  onShowDetails={() => setDetailsLayer(layer)}
                 />
               ))}
             </div>
           </div>
         </div>
+
+        <LayerDetailsPanel
+          layer={detailsLayer}
+          onClose={() => setDetailsLayer(null)}
+          onShowMap={() => {
+            if (detailsLayer) onShowMap(detailsLayer);
+            setDetailsLayer(null);
+          }}
+        />
       </div>
     );
   }
