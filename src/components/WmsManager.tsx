@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Slider } from "@/components/ui/slider";
+import { isRasterLayer } from "@/lib/wms-explorer";
 
 export interface CustomWmsSource {
   id: string;
@@ -143,9 +144,13 @@ export function WmsManager({ sources, onChange, onClose }: WmsManagerProps) {
         if (!name) return;
         const t = el.querySelector(":scope > Title")?.textContent?.trim() || name;
         const a = el.querySelector(":scope > Abstract")?.textContent?.trim() || "";
+        const keywords = Array.from(el.querySelectorAll(":scope > KeywordList > Keyword"))
+          .map((k) => k.textContent?.trim() || "")
+          .filter(Boolean);
+        if (isRasterLayer({ name, title: t, abstract: a, keywords })) return;
         if (!layers.some((l) => l.name === name)) layers.push({ name, title: t, abstract: a });
       });
-      if (layers.length === 0) throw new Error("Nenhuma camada publicada encontrada.");
+      if (layers.length === 0) throw new Error("Nenhuma camada vetorial publicada encontrada.");
       setDiscovered(layers);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao pesquisar camadas.");
