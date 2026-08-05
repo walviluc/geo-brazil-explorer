@@ -167,14 +167,46 @@ export function getUF(nameOrTitle: string): string | null {
   const s = nameOrTitle.toUpperCase();
   const m1 = s.match(/:UF[_\-.]?([A-Z]{2})/);
   if (m1) return m1[1];
-  
+
   const m2 = s.match(/[_\-.]([A-Z]{2})(?:[_\-.]|$)/);
   if (m2 && UF_NAMES[m2[1]]) return m2[1];
-  
+
   const m3 = s.match(/\b([A-Z]{2})\b/);
   if (m3 && UF_NAMES[m3[1]]) return m3[1];
-  
+
   return null;
+}
+
+/** Keywords that identify raster/coverage layers (imagery, DEM, mosaics...).
+ *  The portal only serves vector layers, so these are filtered out. */
+const RASTER_PATTERNS = [
+  /\braster(s)?\b/i,
+  /\bcoverage(s)?\b/i,
+  /\bgeotiff?\b/i,
+  /\bwcs\b/i,
+  /\bmosaic(o|os)?\b/i,
+  /\bimage(m|ns|ry|s)?\b/i,
+  /\bortofoto|orthophoto|ortoimagem\b/i,
+  /\bsat[eé]lite|satellite\b/i,
+  /\bland ?sat|sentinel|cbers|modis|rapideye|planet\b/i,
+  /\bsrtm|topodata|\bmde\b|\bmdt\b|\bmnt\b|\bdem\b|\bdsm\b/i,
+  /\bhillshade|sombreamento|declividade\b/i,
+  /\bndvi|nbr|banda(s)?\b/i,
+  /\bpixel|tif{1,2}\b/i,
+];
+
+export function isRasterLayer(input: {
+  name?: string | null;
+  title?: string | null;
+  abstract?: string | null;
+  keywords?: string[];
+}): boolean {
+  const kw = (input.keywords ?? []).map((k) => k.toLowerCase());
+  if (kw.some((k) => ["wcs", "geotiff", "raster", "coverage", "imagemosaic"].includes(k))) {
+    return true;
+  }
+  const haystack = [input.name, input.title, input.abstract].filter(Boolean).join(" ");
+  return RASTER_PATTERNS.some((re) => re.test(haystack));
 }
 
 export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promise<Layer[]> {
@@ -228,8 +260,16 @@ export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promi
     const title = layer.querySelector('Title')?.textContent || name;
     const abstract = layer.querySelector('Abstract')?.textContent || 'Sem descrição disponível';
     const bbox = layer.querySelector('BoundingBox, EX_GeographicBoundingBox');
+    const keywords = Array.from(layer.querySelectorAll(':scope > KeywordList > Keyword'))
+      .map((k) => k.textContent?.trim() || '')
+      .filter(Boolean);
     
-    if (name && bbox && !/CAR_HIDROGRAFIA/i.test(name)) {
+    if (
+      name &&
+      bbox &&
+      !/CAR_HIDROGRAFIA/i.test(name) &&
+      !isRasterLayer({ name, title, abstract, keywords })
+    ) {
       layers.push({
         name: name,
         title: title || name,

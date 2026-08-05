@@ -147,12 +147,10 @@ export function MapModal({ layer, onClose }: MapModalProps) {
   const [totalLoaded, setTotalLoaded] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loadProgress, setLoadProgress] = useState(0);
-  const [showWmsLayer, setShowWmsLayer] = useState(true);
   const [showVectorLayer, setShowVectorLayer] = useState(true);
   const [overlappingFeatures, setOverlappingFeatures] = useState<OverlappingFeature[]>([]);
   const [selectedFeature, setSelectedFeature] = useState<OverlappingFeature | null>(null);
   const [highlightedLayer, setHighlightedLayer] = useState<L.Layer | null>(null);
-  const wmsLayerRef = useRef<L.TileLayer.WMS | null>(null);
   const vectorLayerRef = useRef<L.GeoJSON | null>(null);
   const allFeaturesRef = useRef<GeoJSON.Feature[]>([]);
   const featureLayersMapRef = useRef<Map<GeoJSON.Feature, L.Layer>>(new Map());
@@ -439,20 +437,6 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     // Set initial view for Brazil
     map.setView([-14.235, -51.925], 4);
 
-    // Add WMS tile layer for raster visualization — skipped for internal
-    // sources (they serve GeoJSON directly, not WMS tiles).
-    if (!layer.sourceUrl.startsWith('internal://')) {
-      const wmsLayer = L.tileLayer.wms(layer.sourceUrl, {
-        layers: layer.name,
-        format: 'image/png',
-        transparent: true,
-        version: '1.1.1',
-        attribution: '',
-        opacity: 0.7
-      }).addTo(map);
-      wmsLayerRef.current = wmsLayer;
-    }
-
     // Fit to layer bounds if available
     if (layer.bbox) {
       const bounds: L.LatLngBoundsExpression = [
@@ -469,7 +453,6 @@ export function MapModal({ layer, onClose }: MapModalProps) {
         mapRef.current.remove();
         mapRef.current = null;
       }
-      wmsLayerRef.current = null;
       vectorLayerRef.current = null;
       allFeaturesRef.current = [];
       featureLayersMapRef.current.clear();
@@ -488,17 +471,6 @@ export function MapModal({ layer, onClose }: MapModalProps) {
       }
     };
   }, [handleMapClick]);
-
-  // Toggle WMS layer visibility
-  useEffect(() => {
-    if (wmsLayerRef.current && mapRef.current) {
-      if (showWmsLayer) {
-        wmsLayerRef.current.addTo(mapRef.current);
-      } else {
-        wmsLayerRef.current.remove();
-      }
-    }
-  }, [showWmsLayer]);
 
   // Toggle Vector layer visibility
   useEffect(() => {
@@ -589,15 +561,6 @@ export function MapModal({ layer, onClose }: MapModalProps) {
               <Layers className="w-3 h-3" />
               <span>Camadas</span>
             </div>
-            <button
-              onClick={() => setShowWmsLayer(!showWmsLayer)}
-              className={`flex items-center gap-2 w-full px-2 py-1.5 text-sm transition-colors ${
-                showWmsLayer ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {showWmsLayer ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              <span>WMS Raster</span>
-            </button>
             <button
               onClick={() => setShowVectorLayer(!showVectorLayer)}
               className={`flex items-center gap-2 w-full px-2 py-1.5 text-sm transition-colors ${
