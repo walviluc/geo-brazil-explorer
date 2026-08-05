@@ -209,20 +209,6 @@ export function isRasterLayer(input: {
   return RASTER_PATTERNS.some((re) => re.test(haystack));
 }
 
-function legacyGetUF(nameOrTitle: string): string | null {
-  const s = nameOrTitle.toUpperCase();
-  const m1 = s.match(/:UF[_\-.]?([A-Z]{2})/);
-  if (m1) return m1[1];
-  
-  const m2 = s.match(/[_\-.]([A-Z]{2})(?:[_\-.]|$)/);
-  if (m2 && UF_NAMES[m2[1]]) return m2[1];
-  
-  const m3 = s.match(/\b([A-Z]{2})\b/);
-  if (m3 && UF_NAMES[m3[1]]) return m3[1];
-  
-  return null;
-}
-
 export async function fetchLayers(sourceUrl: string = DEFAULT_SOURCE.url): Promise<Layer[]> {
   // Internal (Lovable-managed) sources are served through an edge function.
   if (sourceUrl.startsWith('internal://')) {
