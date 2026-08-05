@@ -562,15 +562,6 @@ export function MapModal({ layer, onClose }: MapModalProps) {
               <span>Camadas</span>
             </div>
             <button
-              onClick={() => setShowWmsLayer(!showWmsLayer)}
-              className={`flex items-center gap-2 w-full px-2 py-1.5 text-sm transition-colors ${
-                showWmsLayer ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {showWmsLayer ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              <span>WMS Raster</span>
-            </button>
-            <button
               onClick={() => setShowVectorLayer(!showVectorLayer)}
               className={`flex items-center gap-2 w-full px-2 py-1.5 text-sm transition-colors ${
                 showVectorLayer ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted'
