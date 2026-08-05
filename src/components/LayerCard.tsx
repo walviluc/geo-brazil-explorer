@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn } from "lucide-react";
+import { Download, Map, Loader2, Lock, CheckCircle, Crown, LogIn, Info } from "lucide-react";
 import {
   downloadLayerFile,
   isPremiumSource,
@@ -25,11 +25,12 @@ interface LayerCardProps {
   /** Stored file format on the server (only for internal). */
   storedFormat?: "geojson" | "shapefile";
   onShowMap: () => void;
+  onShowDetails?: () => void;
 }
 
 export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
   function LayerCard(
-    { name, title, abstract, sourceUrl, userPlan, premiumFormats, storedFormat, onShowMap },
+    { name, title, abstract, sourceUrl, userPlan, premiumFormats, storedFormat, onShowMap, onShowDetails },
     ref,
   ) {
     const navigate = useNavigate();
@@ -230,6 +231,18 @@ export const LayerCard = forwardRef<HTMLDivElement, LayerCardProps>(
             {!isLoggedIn ? 'Login p/ Ver' : !hasMapAccess ? 'Upgrade p/ Ver' : 'Ver Mapa'}
           </Button>
         </div>
+
+        {onShowDetails && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onShowDetails}
+            className="w-full mt-2 text-muted-foreground"
+          >
+            <Info className="w-4 h-4 mr-2" />
+            Detalhes e metadados
+          </Button>
+        )}
         
         {status === 'success' && (
           <p className="mt-3 text-sm text-primary flex items-center gap-2">
