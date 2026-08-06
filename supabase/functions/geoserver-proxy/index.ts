@@ -29,7 +29,27 @@ Deno.serve(async (req) => {
     if (!target) return new Response("Missing url", { status: 400, headers: corsHeaders });
 
     const parsed = new URL(target);
-    const hostAllowed = ALLOWED_HOSTS.some(
+    let allowed = [...ALLOWED_HOSTS];
+
+    // Hosts registered by admins in public_data_sources (enabled only).
+    try {
+      const sbUrl = Deno.env.get("SUPABASE_URL");
+      const sbKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (sbUrl && sbKey) {
+        const res = await fetch(
+          `${sbUrl}/rest/v1/public_data_sources?select=url&enabled=eq.true`,
+          { headers: { apikey: sbKey, Authorization: `Bearer ${sbKey}` } },
+        );
+        if (res.ok) {
+          const rows = (await res.json()) as Array<{ url: string }>;
+          for (const r of rows) {
+            try { allowed.push(new URL(r.url).hostname); } catch { /* ignore */ }
+          }
+        }
+      }
+    } catch { /* fall back to static allowlist */ }
+
+    const hostAllowed = allowed.some(
       (host) => parsed.hostname === host || parsed.hostname.endsWith(`.${host}`),
     );
     if (!hostAllowed) {

@@ -14,6 +14,7 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AdminDataSources = lazy(() => import("./pages/AdminDataSources"));
 const AdminPlans = lazy(() => import("./pages/AdminPlans"));
+const AdminPublicSources = lazy(() => import("./pages/AdminPublicSources"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin/data-sources" element={<AdminDataSources />} />
               <Route path="/admin/plans" element={<AdminPlans />} />
+              <Route path="/admin/public-sources" element={<AdminPublicSources />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
