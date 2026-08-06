@@ -89,6 +89,48 @@ export type Database = {
         }
         Relationships: []
       }
+      public_data_sources: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          description: string
+          enabled: boolean
+          id: string
+          label: string
+          slug: string
+          sort_order: number
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          enabled?: boolean
+          id?: string
+          label: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          enabled?: boolean
+          id?: string
+          label?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           billing_cycle: string

@@ -16,25 +16,26 @@ const CATEGORY_LABELS: Record<DataSource["category"], string> = {
 interface SourcePickerProps {
   value: string;
   onChange: (id: string) => void;
+  sources?: DataSource[];
 }
 
-export function SourcePicker({ value, onChange }: SourcePickerProps) {
+export function SourcePicker({ value, onChange, sources = DATA_SOURCES }: SourcePickerProps) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"todas" | DataSource["category"]>("todas");
 
   const categories = useMemo(() => {
-    const set = new Set(DATA_SOURCES.map((s) => s.category));
+    const set = new Set(sources.map((s) => s.category));
     return [...set];
-  }, []);
+  }, [sources]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return DATA_SOURCES.filter((s) => {
+    return sources.filter((s) => {
       if (category !== "todas" && s.category !== category) return false;
       if (!q) return true;
       return `${s.label} ${s.description}`.toLowerCase().includes(q);
     });
-  }, [query, category]);
+  }, [query, category, sources]);
 
   return (
     <div className="mb-8">
