@@ -1,10 +1,12 @@
+import { useState } from "react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Map, MapPin, Layers, Frame, Database } from "lucide-react";
+import { ExternalLink, Map, MapPin, Layers, Frame, Database, Code2 } from "lucide-react";
 import { DATA_SOURCES } from "@/lib/data-sources";
 import { BoundingBox, UF_NAMES, getUF } from "@/lib/wms-explorer";
+import { GetFeatureInfoDialog } from "./GetFeatureInfoDialog";
 
 const CATEGORY_LABELS: Record<string, string> = {
   geral: "Geral",
@@ -35,6 +37,8 @@ function fmt(n: number) {
 }
 
 export function LayerDetailsPanel({ layer, onClose, onShowMap }: LayerDetailsPanelProps) {
+  const [showQuery, setShowQuery] = useState(false);
+
   if (!layer) return null;
 
   const source = DATA_SOURCES.find((s) => s.url === layer.sourceUrl)
@@ -126,12 +130,30 @@ export function LayerDetailsPanel({ layer, onClose, onShowMap }: LayerDetailsPan
           </div>
         </dl>
 
+        <Button
+          variant="outline"
+          className="w-full mt-6"
+          onClick={() => setShowQuery(true)}
+        >
+          <Code2 className="w-4 h-4 mr-2" />
+          Exemplo de consulta GetFeatureInfo
+        </Button>
+
         {onShowMap && (
-          <Button className="w-full mt-6" onClick={onShowMap}>
+          <Button className="w-full mt-2" onClick={onShowMap}>
             <Map className="w-4 h-4 mr-2" />
             Ver no mapa
           </Button>
         )}
+
+        <GetFeatureInfoDialog
+          open={showQuery}
+          onOpenChange={setShowQuery}
+          layerName={layer.name}
+          layerTitle={layer.title}
+          sourceUrl={layer.sourceUrl}
+          bbox={layer.bbox}
+        />
       </SheetContent>
     </Sheet>
   );
