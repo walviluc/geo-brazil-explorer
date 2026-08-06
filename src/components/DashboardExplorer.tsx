@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Search, Database, Layers, RefreshCw } from "lucide-react";
 import { fetchLayers, groupLayersByState, Layer, UF_NAMES, PlanType } from "@/lib/wms-explorer";
 import { DEFAULT_SOURCE, getSourceById } from "@/lib/data-sources";
+import { usePublicSources } from "@/hooks/usePublicSources";
 import { SourcePicker } from "./SourcePicker";
 import { StateCard } from "./StateCard";
 import { StateModal } from "./StateModal";
@@ -24,7 +25,8 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
   const [mapLayer, setMapLayer] = useState<Layer | null>(null);
   const [sourceId, setSourceId] = useState<string>(DEFAULT_SOURCE.id);
 
-  const currentSource = getSourceById(sourceId);
+  const { sources } = usePublicSources();
+  const currentSource = sources.find((s) => s.id === sourceId) ?? getSourceById(sourceId);
 
   const loadLayers = async () => {
     setLoading(true);
@@ -74,7 +76,7 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
       </div>
 
       {/* Data source selector */}
-      <SourcePicker value={sourceId} onChange={setSourceId} />
+      <SourcePicker value={sourceId} onChange={setSourceId} sources={sources} />
 
       {/* Controls */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
