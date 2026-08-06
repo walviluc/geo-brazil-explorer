@@ -130,12 +130,30 @@ export function LayerDetailsPanel({ layer, onClose, onShowMap }: LayerDetailsPan
           </div>
         </dl>
 
+        <Button
+          variant="outline"
+          className="w-full mt-6"
+          onClick={() => setShowQuery(true)}
+        >
+          <Code2 className="w-4 h-4 mr-2" />
+          Exemplo de consulta GetFeatureInfo
+        </Button>
+
         {onShowMap && (
-          <Button className="w-full mt-6" onClick={onShowMap}>
+          <Button className="w-full mt-2" onClick={onShowMap}>
             <Map className="w-4 h-4 mr-2" />
             Ver no mapa
           </Button>
         )}
+
+        <GetFeatureInfoDialog
+          open={showQuery}
+          onOpenChange={setShowQuery}
+          layerName={layer.name}
+          layerTitle={layer.title}
+          sourceUrl={layer.sourceUrl}
+          bbox={layer.bbox}
+        />
       </SheetContent>
     </Sheet>
   );
