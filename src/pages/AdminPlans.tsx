@@ -12,6 +12,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { Loader2, ShieldAlert, ArrowLeft, MapPin, Crown, Save, Search } from 'lucide-react';
 import { UserMenu } from '@/components/UserMenu';
+import { PlanCatalogManager } from '@/components/PlanCatalogManager';
 import { z } from 'zod';
 
 type Plan = 'gratuito' | 'profissional' | 'completo';
@@ -209,7 +210,16 @@ export default function AdminPlans() {
           <Crown className="w-6 h-6 text-primary" />
           <h1 className="text-3xl font-bold">Gerenciar planos</h1>
         </div>
-        <p className="text-muted-foreground mb-6">
+        <p className="text-muted-foreground mb-8">
+          Gerencie o catálogo de planos exibido no site e as assinaturas dos usuários.
+        </p>
+
+        <PlanCatalogManager />
+
+        <div className="h-px bg-border my-10" />
+
+        <h2 className="text-xl font-semibold mb-1">Assinaturas de usuários</h2>
+        <p className="text-muted-foreground mb-6 text-sm">
           Visualize e altere o plano, status e ciclo de cobrança de qualquer usuário.
         </p>
 
