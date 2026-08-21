@@ -6,68 +6,18 @@ import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, PlanType, BillingCycle } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { usePlans } from '@/hooks/usePlans';
 
 // Public Key do Mercado Pago (pode ficar no código)
 const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-5cb242c6-612e-49cf-bc1d-8ede24066966';
 
-const plans: {
-  id: PlanType;
-  name: string;
-  description: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
-  features: string[];
-  popular: boolean;
-}[] = [
-  {
-    id: 'gratuito',
-    name: 'Gratuito',
-    description: 'Todos os dados públicos oficiais, sem custo',
-    monthlyPrice: 0,
-    yearlyPrice: 0,
-    features: [
-      'Acesso a TODAS as fontes públicas oficiais (IBGE, INPE, IBAMA, FUNAI, ICMBio, EMBRAPA e mais)',
-      'Visualização e download em GeoJSON',
-      'Busca por estado e tema',
-      '500+ camadas gratuitas'
-    ],
-    popular: false
-  },
-  {
-    id: 'profissional',
-    name: 'Profissional',
-    description: 'Catálogo Premium curado + tudo do Gratuito',
-    monthlyPrice: 29.90,
-    yearlyPrice: 20,
-    features: [
-      'Tudo do plano Gratuito',
-      'Acesso ao Catálogo Premium interno',
-      'Shapefiles curados por estado',
-      'Dados exclusivos gerenciados pela plataforma',
-      'Suporte por email'
-    ],
-    popular: true
-  },
-  {
-    id: 'completo',
-    name: 'Completo',
-    description: 'Premium + suporte dedicado para empresas',
-    monthlyPrice: 60,
-    yearlyPrice: 45,
-    features: [
-      'Tudo do plano Profissional',
-      'Acesso completo ao Catálogo Premium',
-      'Suporte prioritário 24/7',
-      'Atendimento a demandas específicas',
-      'Exportação em múltiplos formatos'
-    ],
-    popular: false
-  }
-];
+// Plans are managed by admins in /admin/plans (table: plans)
+
 
 export default function Subscription() {
   const { user, loading: authLoading } = useAuth();
   const { subscription, loading: subLoading, updateSubscription } = useSubscription();
+  const { plans, loading: plansLoading } = usePlans();
   const [isYearly, setIsYearly] = useState(false);
   const [processingPlan, setProcessingPlan] = useState<PlanType | null>(null);
   const navigate = useNavigate();
@@ -83,7 +33,7 @@ export default function Subscription() {
     if (status === 'success' && planId && cycle) {
       toast({
         title: 'Pagamento realizado!',
-        description: `Seu plano ${plans.find(p => p.id === planId)?.name} foi ativado com sucesso.`,
+        description: `Seu plano ${plans.find(p => p.slug === planId)?.name} foi ativado com sucesso.`,
       });
       // Refresh subscription data
       window.location.href = '/subscription';
@@ -99,7 +49,7 @@ export default function Subscription() {
         description: 'Seu pagamento está sendo processado. Aguarde a confirmação.',
       });
     }
-  }, [searchParams, toast]);
+  }, [searchParams, toast, plans]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -107,7 +57,7 @@ export default function Subscription() {
     }
   }, [user, authLoading, navigate]);
 
-  if (authLoading || subLoading) {
+  if (authLoading || subLoading || plansLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent"></div>
@@ -201,7 +151,7 @@ export default function Subscription() {
             Gerenciar Assinatura
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
-            Seu plano atual: <span className="font-semibold text-primary">{plans.find(p => p.id === currentPlan)?.name}</span>
+            Seu plano atual: <span className="font-semibold text-primary">{plans.find(p => p.slug === currentPlan)?.name}</span>
           </p>
           
           {/* Toggle */}
@@ -230,7 +180,7 @@ export default function Subscription() {
             <div 
               key={plan.id}
               className={`relative rounded-2xl p-8 transition-all ${
-                plan.id === currentPlan
+                plan.slug === currentPlan
                   ? 'ring-2 ring-primary bg-primary/5'
                   : plan.popular 
                     ? 'bg-secondary border-2 border-primary shadow-xl scale-105' 
@@ -244,7 +194,7 @@ export default function Subscription() {
                 </div>
               )}
               
-              {plan.id === currentPlan && (
+              {plan.slug === currentPlan && (
                 <div className="absolute -top-4 right-4 px-4 py-1 rounded-full bg-accent text-accent-foreground text-sm font-medium flex items-center gap-1">
                   <Crown className="w-4 h-4" />
                   Seu Plano
@@ -264,15 +214,15 @@ export default function Subscription() {
                 <div className="flex items-baseline justify-center gap-1">
                   <span className={`text-lg ${plan.popular ? 'text-secondary-foreground/70' : 'text-muted-foreground'}`}>R$</span>
                   <span className={`text-5xl font-bold ${plan.popular ? 'text-secondary-foreground' : 'text-foreground'}`}>
-                    {isYearly ? plan.yearlyPrice.toFixed(0) : plan.monthlyPrice.toFixed(0).replace('.', ',')}
+                    {(isYearly ? plan.yearly_price : plan.monthly_price).toFixed(0)}
                   </span>
-                  {plan.monthlyPrice > 0 && (
+                  {plan.monthly_price > 0 && (
                     <span className={`text-sm ${plan.popular ? 'text-secondary-foreground/70' : 'text-muted-foreground'}`}>/mês</span>
                   )}
                 </div>
-                {isYearly && plan.monthlyPrice > 0 && (
+                {isYearly && plan.monthly_price > 0 && (
                   <p className={`text-sm mt-2 ${plan.popular ? 'text-secondary-foreground/60' : 'text-muted-foreground'}`}>
-                    cobrado anualmente (R$ {(plan.yearlyPrice * 12).toFixed(0)}/ano)
+                    cobrado anualmente (R$ {(plan.yearly_price * 12).toFixed(0)}/ano)
                   </p>
                 )}
               </div>
@@ -288,22 +238,22 @@ export default function Subscription() {
               
               <Button 
                 className="w-full" 
-                variant={plan.id === currentPlan ? 'secondary' : plan.popular ? 'default' : 'outline'}
+                variant={plan.slug === currentPlan ? 'secondary' : plan.popular ? 'default' : 'outline'}
                 size="lg"
-                disabled={plan.id === currentPlan || processingPlan !== null}
-                onClick={() => handleSelectPlan(plan.id)}
+                disabled={plan.slug === currentPlan || processingPlan !== null}
+                onClick={() => handleSelectPlan(plan.slug as PlanType)}
               >
-                {plan.id === currentPlan ? (
+                {plan.slug === currentPlan ? (
                   'Plano Atual'
-                ) : processingPlan === plan.id ? (
+                ) : processingPlan === plan.slug ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Processando...
                   </>
-                ) : plan.monthlyPrice === 0 ? (
+                ) : plan.monthly_price === 0 ? (
                   'Mudar para Gratuito'
                 ) : (
-                  `Assinar ${plan.name}`
+                  plan.cta
                 )}
               </Button>
             </div>
