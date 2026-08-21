@@ -65,6 +65,57 @@ export type Database = {
         }
         Relationships: []
       }
+      plans: {
+        Row: {
+          created_at: string
+          cta: string
+          description: string
+          enabled: boolean
+          excluded: string[]
+          features: string[]
+          id: string
+          monthly_price: number
+          name: string
+          popular: boolean
+          slug: string
+          sort_order: number
+          updated_at: string
+          yearly_price: number
+        }
+        Insert: {
+          created_at?: string
+          cta?: string
+          description?: string
+          enabled?: boolean
+          excluded?: string[]
+          features?: string[]
+          id?: string
+          monthly_price?: number
+          name: string
+          popular?: boolean
+          slug: string
+          sort_order?: number
+          updated_at?: string
+          yearly_price?: number
+        }
+        Update: {
+          created_at?: string
+          cta?: string
+          description?: string
+          enabled?: boolean
+          excluded?: string[]
+          features?: string[]
+          id?: string
+          monthly_price?: number
+          name?: string
+          popular?: boolean
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+          yearly_price?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
