@@ -80,7 +80,11 @@ export function PlanCatalogManager() {
         const { error } = await supabase.from('plans').update(parsed.data).eq('id', editing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('plans').insert(parsed.data);
+        const { error } = await supabase.from('plans').insert({
+          ...parsed.data,
+          name: parsed.data.name,
+          slug: parsed.data.slug,
+        });
         if (error) throw error;
       }
       toast({ title: editing ? 'Plano atualizado' : 'Plano criado', description: parsed.data.name });
