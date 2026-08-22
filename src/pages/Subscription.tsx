@@ -8,10 +8,9 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { usePlans } from '@/hooks/usePlans';
 
-// Public Key do Mercado Pago (pode ficar no código)
-const MERCADOPAGO_PUBLIC_KEY = 'APP_USR-5cb242c6-612e-49cf-bc1d-8ede24066966';
+// Planos são gerenciados pelo admin em /admin/plans (tabela: plans)
 
-// Plans are managed by admins in /admin/plans (table: plans)
+
 
 
 export default function Subscription() {
