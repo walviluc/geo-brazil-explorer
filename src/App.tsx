@@ -11,6 +11,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Subscription = lazy(() => import("./pages/Subscription"));
+const SubscriptionHistory = lazy(() => import("./pages/SubscriptionHistory"));
 const Profile = lazy(() => import("./pages/Profile"));
 const AdminDataSources = lazy(() => import("./pages/AdminDataSources"));
 const AdminPlans = lazy(() => import("./pages/AdminPlans"));
@@ -32,6 +33,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/subscription" element={<Subscription />} />
+              <Route path="/subscription/history" element={<SubscriptionHistory />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin/data-sources" element={<AdminDataSources />} />
               <Route path="/admin/plans" element={<AdminPlans />} />
