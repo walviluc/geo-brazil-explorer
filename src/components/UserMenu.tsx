@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CreditCard, Crown, LogOut, Shield, User, LayoutDashboard } from 'lucide-react';
+import { CreditCard, Crown, LogOut, Shield, User, LayoutDashboard, Receipt } from 'lucide-react';
 
 const planLabels: Record<string, string> = {
   gratuito: 'Gratuito',
@@ -93,6 +93,10 @@ export function UserMenu({ showPlanBadge = true, showDashboardLink = false }: Us
           <DropdownMenuItem onClick={() => navigate('/subscription')}>
             <CreditCard className="w-4 h-4 mr-2" />
             Gerenciar plano
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => navigate('/subscription/history')}>
+            <Receipt className="w-4 h-4 mr-2" />
+            Histórico e recibos
           </DropdownMenuItem>
           {isAdmin && (
             <>
