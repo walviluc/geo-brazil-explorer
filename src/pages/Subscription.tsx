@@ -186,7 +186,8 @@ export default function Subscription() {
                     : 'bg-card border border-border'
               }`}
             >
-              {plan.popular && (
+              {plan.popular && plan.slug !== currentPlan && (
+
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1">
                   <Star className="w-4 h-4" />
                   Mais Popular
