@@ -86,7 +86,50 @@ Deno.serve(async (req) => {
           throw new Error('Erro ao atualizar assinatura');
         }
 
+        // Registrar recibo do pagamento
+        const { error: recordError } = await supabase
+          .from('payment_records')
+          .upsert({
+            user_id: userId,
+            plan: planId,
+            billing_cycle: billingCycle,
+            amount: payment.transaction_amount ?? 0,
+            currency: payment.currency_id ?? 'BRL',
+            status: 'approved',
+            provider: 'mercadopago',
+            payment_id: String(paymentId),
+            payment_method: payment.payment_method_id ?? payment.payment_type_id ?? null,
+            paid_at: payment.date_approved ?? new Date().toISOString(),
+            period_start: new Date().toISOString(),
+            period_end: expiresAt.toISOString(),
+          }, { onConflict: 'provider,payment_id' });
+
+        if (recordError) {
+          console.error('Error inserting payment record:', recordError);
+        }
+
         console.log('Subscription updated successfully');
+      } else if (payment.external_reference) {
+        // Registrar tentativas não aprovadas (pendente/recusado)
+        try {
+          const { userId, planId, billingCycle } = JSON.parse(payment.external_reference);
+          const { error: recordError } = await supabase
+            .from('payment_records')
+            .upsert({
+              user_id: userId,
+              plan: planId,
+              billing_cycle: billingCycle,
+              amount: payment.transaction_amount ?? 0,
+              currency: payment.currency_id ?? 'BRL',
+              status: payment.status ?? 'pending',
+              provider: 'mercadopago',
+              payment_id: String(paymentId),
+              payment_method: payment.payment_method_id ?? payment.payment_type_id ?? null,
+            }, { onConflict: 'provider,payment_id' });
+          if (recordError) console.error('Error inserting pending payment record:', recordError);
+        } catch (e) {
+          console.error('Could not record non-approved payment:', e);
+        }
       }
     }
 

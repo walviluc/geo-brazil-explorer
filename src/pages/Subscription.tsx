@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowLeft, Check, Star, Crown, Loader2 } from 'lucide-react';
+import { MapPin, ArrowLeft, Check, Star, Crown, Loader2, Receipt } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, PlanType, BillingCycle } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
@@ -135,10 +135,17 @@ export default function Subscription() {
               <span className="text-lg font-bold text-secondary-foreground">GeoData Brasil</span>
             </a>
             
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Dashboard
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => navigate('/subscription/history')}>
+                <Receipt className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Histórico e recibos</span>
+                <span className="sm:hidden">Histórico</span>
+              </Button>
+              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Voltar ao Dashboard</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
