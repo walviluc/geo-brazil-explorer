@@ -135,10 +135,17 @@ export default function Subscription() {
               <span className="text-lg font-bold text-secondary-foreground">GeoData Brasil</span>
             </a>
             
-            <Button variant="ghost" onClick={() => navigate('/dashboard')}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar ao Dashboard
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => navigate('/subscription/history')}>
+                <Receipt className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Histórico e recibos</span>
+                <span className="sm:hidden">Histórico</span>
+              </Button>
+              <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Voltar ao Dashboard</span>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
