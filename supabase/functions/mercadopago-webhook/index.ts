@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
             paid_at: payment.date_approved ?? new Date().toISOString(),
             period_start: new Date().toISOString(),
             period_end: expiresAt.toISOString(),
-          }, { onConflict: 'payment_id' });
+          }, { onConflict: 'provider,payment_id' });
 
         if (recordError) {
           console.error('Error inserting payment record:', recordError);
@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
               provider: 'mercadopago',
               payment_id: String(paymentId),
               payment_method: payment.payment_method_id ?? payment.payment_type_id ?? null,
-            }, { onConflict: 'payment_id' });
+            }, { onConflict: 'provider,payment_id' });
           if (recordError) console.error('Error inserting pending payment record:', recordError);
         } catch (e) {
           console.error('Could not record non-approved payment:', e);
