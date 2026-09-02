@@ -16,6 +16,11 @@ const Profile = lazy(() => import("./pages/Profile"));
 const AdminDataSources = lazy(() => import("./pages/AdminDataSources"));
 const AdminPlans = lazy(() => import("./pages/AdminPlans"));
 const AdminPublicSources = lazy(() => import("./pages/AdminPublicSources"));
+const TermsOfUse = lazy(() => import("./pages/legal/TermsOfUse"));
+const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
+const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
+const RefundPolicy = lazy(() => import("./pages/legal/RefundPolicy"));
+const DataLicense = lazy(() => import("./pages/legal/DataLicense"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
