@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MapPin, ArrowLeft, Check, Star, Crown, Loader2 } from 'lucide-react';
+import { MapPin, ArrowLeft, Check, Star, Crown, Loader2, Receipt } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useSubscription, PlanType, BillingCycle } from '@/hooks/useSubscription';
 import { useToast } from '@/hooks/use-toast';
