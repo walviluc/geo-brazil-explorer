@@ -27,6 +27,7 @@ export function Footer() {
               <li><a href="#premium" className="hover:text-primary transition-colors">Catálogo Premium</a></li>
               <li><a href="#pricing" className="hover:text-primary transition-colors">Planos</a></li>
             </ul>
+          </div>
 
           {/* Legal */}
           <div>
