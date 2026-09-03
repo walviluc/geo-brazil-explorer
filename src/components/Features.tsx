@@ -1,37 +1,38 @@
-import { Map, Download, Filter, Globe, Layers, Crown } from "lucide-react";
+import { Map, Download, Info, Globe, Layers, Crown } from "lucide-react";
 
 const features = [
   {
     icon: Globe,
-    title: "13 fontes oficiais conectadas",
-    description: "IBGE, INPE, ICMBio, MMA, ANP, CPRM, EMBRAPA, MAPA, SFB, DNIT, ANATEL e IPHAN — organizados por estado e tema."
+    title: "Fontes públicas sempre atualizadas",
+    description: "IBGE, INPE, ICMBio, MMA, ANP, CPRM, EMBRAPA e outras — catálogo dinâmico mantido pela equipe e organizado por estado e tema."
   },
   {
     icon: Layers,
     title: "Gerenciador WMS próprio",
-    description: "Adicione seus próprios serviços WMS ao mapa, com controle de visibilidade e opacidade por camada."
+    description: "Adicione seus próprios serviços WMS ao mapa, com controle de visibilidade e opacidade por camada vetorial."
   },
   {
     icon: Download,
     title: "GeoJSON, KML e Shapefile",
-    description: "Baixe cada camada no formato que preferir, pronto para QGIS, ArcGIS ou Google Earth."
+    description: "Baixe cada camada no formato que preferir, com liberação por formato conforme o seu plano."
+  },
+  {
+    icon: Info,
+    title: "Detalhes e GetFeatureInfo",
+    description: "Painel de metadados da camada com nome técnico, UF, bounding box e um exemplo pronto de consulta GetFeatureInfo."
   },
   {
     icon: Map,
-    title: "Mapa interativo",
+    title: "Mapa interativo vetorial",
     description: "Explore as feições no navegador, consulte atributos e sobreponha camadas antes de baixar."
-  },
-  {
-    icon: Filter,
-    title: "Busca e filtros por fonte",
-    description: "Seletor de fontes em cards com busca, categorias temáticas e agrupamento automático por UF."
   },
   {
     icon: Crown,
     title: "Catálogo Premium interno",
-    description: "Shapefiles curados por estado, hospedados na plataforma, para os planos Profissional e Completo."
+    description: "Shapefiles curados por estado, hospedados na plataforma, com histórico de assinaturas e recibos na sua conta."
   }
 ];
+
 
 export function Features() {
   return (

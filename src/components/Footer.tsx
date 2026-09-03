@@ -1,10 +1,11 @@
 import { MapPin, Mail, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export function Footer() {
   return (
     <footer className="bg-secondary py-12">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+        <div className="grid md:grid-cols-5 gap-8 mb-8">
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
@@ -27,6 +28,19 @@ export function Footer() {
               <li><a href="#pricing" className="hover:text-primary transition-colors">Planos</a></li>
             </ul>
           </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="font-semibold text-secondary-foreground mb-4">Legal</h4>
+            <ul className="space-y-2 text-secondary-foreground/70 text-sm">
+              <li><Link to="/termos-de-uso" className="hover:text-primary transition-colors">Termos de Uso</Link></li>
+              <li><Link to="/politica-de-privacidade" className="hover:text-primary transition-colors">Política de Privacidade</Link></li>
+              <li><Link to="/politica-de-cookies" className="hover:text-primary transition-colors">Política de Cookies</Link></li>
+              <li><Link to="/politica-de-reembolso" className="hover:text-primary transition-colors">Reembolso e Cancelamento</Link></li>
+              <li><Link to="/licenca-de-dados" className="hover:text-primary transition-colors">Licença e Uso dos Dados</Link></li>
+            </ul>
+          </div>
+
           
           {/* Contact */}
           <div>
