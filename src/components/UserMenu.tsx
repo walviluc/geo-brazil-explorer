@@ -109,6 +109,10 @@ export function UserMenu({ showPlanBadge = true, showDashboardLink = false }: Us
                 <Shield className="w-4 h-4 mr-2 text-primary" />
                 Fontes públicas
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/admin/users')}>
+                <Shield className="w-4 h-4 mr-2 text-primary" />
+                Usuários e assinantes
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => navigate('/admin/plans')}>
                 <Crown className="w-4 h-4 mr-2 text-primary" />
                 Gerenciar planos
