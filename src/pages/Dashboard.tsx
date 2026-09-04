@@ -143,22 +143,24 @@ export default function Dashboard() {
               ))}
             </section>
 
+            {/* Explorer */}
+            <section className="rounded-xl border border-border bg-card p-4 md:p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-1">Geodados por UF</h3>
+              <p className="text-sm text-muted-foreground">
+                Escolha uma fonte de dados e navegue pelas camadas organizadas por estado
+                brasileiro.
+              </p>
+              <div id="geodados" className="scroll-mt-24">
+                <DashboardExplorer
+                  userPlan={currentPlan as 'gratuito' | 'profissional' | 'completo'}
+                />
+              </div>
+            </section>
+
             {/* Quick actions */}
             <section className="grid gap-4 lg:grid-cols-3">
-              <div className="lg:col-span-2 rounded-xl border border-border bg-card p-6">
-                <h3 className="text-lg font-semibold text-foreground mb-1">Geodados por UF</h3>
-                <p className="text-sm text-muted-foreground">
-                  Escolha uma fonte de dados e navegue pelas camadas organizadas por estado
-                  brasileiro.
-                </p>
-                <div id="geodados" className="scroll-mt-24">
-                  <DashboardExplorer
-                    userPlan={currentPlan as 'gratuito' | 'profissional' | 'completo'}
-                  />
-                </div>
-              </div>
-
               <div className="rounded-xl border border-border bg-card p-6 h-fit">
+
                 <h3 className="text-lg font-semibold text-foreground mb-1">Sua conta</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Atalhos para plano, pagamentos e dados pessoais.
