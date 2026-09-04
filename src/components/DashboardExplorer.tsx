@@ -9,6 +9,7 @@ import { SourcePicker } from "./SourcePicker";
 import { StateCard } from "./StateCard";
 import { StateModal } from "./StateModal";
 import { MapModal } from "./MapModal";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 interface DashboardExplorerProps {
   userPlan: 'gratuito' | 'profissional' | 'completo';
@@ -66,7 +67,14 @@ export const DashboardExplorer = forwardRef<HTMLElement, DashboardExplorerProps>
 
   return (
     <section ref={ref} className="py-8">
+      {loading && (
+        <LoadingOverlay
+          title={`Carregando ${currentSource.label.split(" — ")[0]}…`}
+          description="Buscando as camadas disponíveis nesta fonte. Aguarde alguns instantes."
+        />
+      )}
       <div className="text-center mb-8">
+
         <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
           Dados Geoespaciais
         </h2>
