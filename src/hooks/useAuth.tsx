@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  blocked: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [blocked, setBlocked] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -25,6 +27,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        if (session?.user) {
+          // defer to avoid deadlocks inside the auth callback
+          setTimeout(() => { void checkBlocked(session.user.id); }, 0);
+        } else {
+          setBlocked(false);
+        }
       }
     );
 
@@ -33,10 +41,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
+      if (session?.user) void checkBlocked(session.user.id);
     });
+
+    async function checkBlocked(userId: string) {
+      const { data } = await supabase
+        .from('profiles')
+        .select('blocked')
+        .eq('id', userId)
+        .maybeSingle();
+      if (data?.blocked) {
+        setBlocked(true);
+        await supabase.auth.signOut();
+      } else {
+        setBlocked(false);
+      }
+    }
 
     return () => subscription.unsubscribe();
   }, []);
+
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `${window.location.origin}/`;
@@ -69,7 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, blocked, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

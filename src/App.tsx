@@ -44,6 +44,7 @@ const App = () => (
               <Route path="/admin/data-sources" element={<AdminDataSources />} />
               <Route path="/admin/plans" element={<AdminPlans />} />
               <Route path="/admin/public-sources" element={<AdminPublicSources />} />
+              <Route path="/admin/users" element={<AdminUsers />} />
               <Route path="/termos-de-uso" element={<TermsOfUse />} />
               <Route path="/politica-de-privacidade" element={<PrivacyPolicy />} />
               <Route path="/politica-de-cookies" element={<CookiePolicy />} />

@@ -20,7 +20,7 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; name?: string }>({});
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, signUp, user, blocked } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -29,6 +29,17 @@ export default function Auth() {
       navigate('/dashboard');
     }
   }, [user, navigate]);
+
+  useEffect(() => {
+    if (blocked) {
+      toast({
+        title: 'Acesso bloqueado',
+        description: 'Sua conta foi bloqueada pelo administrador. Entre em contato com o suporte.',
+        variant: 'destructive',
+      });
+    }
+  }, [blocked, toast]);
+
 
   const validateForm = () => {
     const newErrors: { email?: string; password?: string; name?: string } = {};
