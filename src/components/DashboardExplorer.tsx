@@ -9,6 +9,7 @@ import { SourcePicker } from "./SourcePicker";
 import { StateCard } from "./StateCard";
 import { StateModal } from "./StateModal";
 import { MapModal } from "./MapModal";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 interface DashboardExplorerProps {
   userPlan: 'gratuito' | 'profissional' | 'completo';
