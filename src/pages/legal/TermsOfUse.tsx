@@ -112,7 +112,7 @@ const TermsOfUse = () => (
     <div>
       <h2>10. Contato</h2>
       <p>
-        Dúvidas sobre estes Termos: <a href="mailto:contato@geodatabrasil.com">contato@geodatabrasil.com</a>.
+        Dúvidas sobre estes Termos: <a href="mailto:contato@lojadosmapas.com.br">contato@lojadosmapas.com.br</a>.
       </p>
     </div>
   </LegalLayout>

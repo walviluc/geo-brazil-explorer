@@ -63,7 +63,7 @@ const DataLicense = () => (
       <h2>6. Correções e remoções</h2>
       <p>
         Encontrou inconsistência em uma camada ou é titular de dados publicados indevidamente? Escreva para
-        <a href="mailto:contato@geodatabrasil.com"> contato@geodatabrasil.com</a> e avaliaremos a correção ou a
+        <a href="mailto:contato@lojadosmapas.com.br"> contato@lojadosmapas.com.br</a> e avaliaremos a correção ou a
         remoção do conteúdo.
       </p>
     </div>

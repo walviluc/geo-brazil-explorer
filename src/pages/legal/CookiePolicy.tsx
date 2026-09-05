@@ -51,7 +51,7 @@ const CookiePolicy = () => (
     <div>
       <h2>5. Contato</h2>
       <p>
-        Dúvidas: <a href="mailto:privacidade@geodatabrasil.com">privacidade@geodatabrasil.com</a>.
+        Dúvidas: <a href="mailto:contato@lojadosmapas.com.br">contato@lojadosmapas.com.br</a>.
       </p>
     </div>
   </LegalLayout>

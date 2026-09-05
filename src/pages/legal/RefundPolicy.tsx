@@ -37,7 +37,7 @@ const RefundPolicy = () => (
     <div>
       <h2>4. Como solicitar</h2>
       <ul>
-        <li>Envie o pedido para <a href="mailto:contato@geodatabrasil.com">contato@geodatabrasil.com</a> com o e-mail da conta e o identificador do pagamento (disponível em "Histórico e recibos").</li>
+        <li>Envie o pedido para <a href="mailto:contato@lojadosmapas.com.br">contato@lojadosmapas.com.br</a> com o e-mail da conta e o identificador do pagamento (disponível em "Histórico e recibos").</li>
         <li>Responderemos em até 5 dias úteis.</li>
         <li>Reembolsos aprovados são processados pelo mesmo meio de pagamento, respeitando os prazos da operadora ou do emissor do cartão.</li>
       </ul>
