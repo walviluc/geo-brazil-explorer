@@ -9,9 +9,10 @@ const TermsOfUse = () => (
     <div>
       <h2>1. Aceitação dos termos</h2>
       <p>
-        Ao criar uma conta, acessar ou utilizar o GeoData Brasil ("plataforma"), você declara que leu,
-        compreendeu e concorda integralmente com estes Termos de Uso e com a Política de Privacidade.
-        Caso não concorde, não utilize a plataforma.
+        O GeoData Brasil (geodadosbrasil.com.br) é um serviço operado pela Loja dos Mapas
+        (contato@lojadosmapas.com.br). Ao criar uma conta, acessar ou utilizar o GeoData Brasil
+        ("plataforma"), você declara que leu, compreendeu e concorda integralmente com estes Termos
+        de Uso e com a Política de Privacidade. Caso não concorde, não utilize a plataforma.
       </p>
     </div>
 
