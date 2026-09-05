@@ -51,7 +51,7 @@ export function Footer() {
             <ul className="space-y-3 text-secondary-foreground/70">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <a href="mailto:contato@lojadosmapas.com.br" className="hover:text-primary transition-colors">
+                <a href="mailto:contato@lojadosmapas.com.br" className="hover:text-primary transition-colors break-all">
                   contato@lojadosmapas.com.br
                 </a>
               </li>
