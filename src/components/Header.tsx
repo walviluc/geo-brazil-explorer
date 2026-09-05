@@ -43,9 +43,6 @@ export function Header() {
             <a href="#pricing" className="text-secondary-foreground/70 hover:text-primary transition-colors">
               Planos
             </a>
-            <a href="#" className="text-secondary-foreground/70 hover:text-primary transition-colors">
-              Documentação
-            </a>
           </nav>
           
           {/* CTA */}
@@ -98,9 +95,6 @@ export function Header() {
               </a>
               <a href="#pricing" className="text-secondary-foreground/70 hover:text-primary transition-colors py-2">
                 Planos
-              </a>
-              <a href="#" className="text-secondary-foreground/70 hover:text-primary transition-colors py-2">
-                Documentação
               </a>
               <div className="flex flex-col gap-2 pt-4 border-t border-secondary-foreground/10">
                 {user ? (

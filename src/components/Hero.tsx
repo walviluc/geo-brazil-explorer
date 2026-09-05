@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { MapPin, Database, Shield } from "lucide-react";
-import heroImage from "@/assets/hero-brazil-geo.jpg";
+import heroImage from "@/assets/hero-abstract.jpg";
 
 export function Hero() {
   const scrollToExplorer = () => {
