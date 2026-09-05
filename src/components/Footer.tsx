@@ -17,6 +17,9 @@ export function Footer() {
               Fontes públicas oficiais gratuitas em GeoJSON, KML e Shapefile, mais um Catálogo
               Premium com shapefiles curados por estado.
             </p>
+            <p className="text-secondary-foreground/70 max-w-md mt-3 text-sm">
+              GeoData Brasil é um serviço operado pela Loja dos Mapas · geodadosbrasil.com.br
+            </p>
           </div>
           
           {/* Links */}
@@ -48,13 +51,20 @@ export function Footer() {
             <ul className="space-y-3 text-secondary-foreground/70">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <a href="mailto:contato@geodatabrasil.com" className="hover:text-primary transition-colors">
-                  contato@geodatabrasil.com
+                <a href="mailto:contato@lojadosmapas.com.br" className="hover:text-primary transition-colors break-all">
+                  contato@lojadosmapas.com.br
                 </a>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>(11) 9999-9999</span>
+                <a
+                  href="https://wa.me/5591933006081"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  (91) 93300-6081 — WhatsApp
+                </a>
               </li>
             </ul>
           </div>
