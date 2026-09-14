@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { MapPin, Database, Shield } from "lucide-react";
 import heroImage from "@/assets/hero-abstract.jpg";
+import { usePublicSources } from "@/hooks/usePublicSources";
 
 export function Hero() {
+  const { sources } = usePublicSources();
+  const publicCount = sources.filter((s) => !s.internal).length;
+
   const scrollToExplorer = () => {
     document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
   };
