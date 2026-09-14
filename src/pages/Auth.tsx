@@ -273,7 +273,11 @@ export default function Auth() {
                 onClick={() => setMode(isLogin ? 'signup' : 'login')}
                 className="block w-full text-sm text-muted-foreground hover:text-primary transition-colors"
               >
-                {isLogin ? 'Não tem conta? Cadastre-se' : 'Já tem conta? Entre'}
+                {isLogin
+                  ? 'Não tem conta? Cadastre-se'
+                  : mode === 'forgot'
+                  ? 'Voltar para o login'
+                  : 'Já tem conta? Entre'}
               </button>
             )}
           </div>
