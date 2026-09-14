@@ -49,7 +49,7 @@ export function Hero() {
               <Database className="w-6 h-6 text-primary" />
             </div>
             <div className="text-left">
-              <p className="text-2xl font-bold text-secondary-foreground">13</p>
+              <p className="text-2xl font-bold text-secondary-foreground">{publicCount || 13}</p>
               <p className="text-sm text-secondary-foreground/70">Fontes Oficiais</p>
             </div>
           </div>
