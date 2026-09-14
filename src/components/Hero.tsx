@@ -1,8 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { MapPin, Database, Shield } from "lucide-react";
 import heroImage from "@/assets/hero-abstract.jpg";
+import { usePublicSources } from "@/hooks/usePublicSources";
 
 export function Hero() {
+  const { sources } = usePublicSources();
+  const publicCount = sources.filter((s) => !s.internal).length;
+
   const scrollToExplorer = () => {
     document.getElementById('explorer')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -45,7 +49,7 @@ export function Hero() {
               <Database className="w-6 h-6 text-primary" />
             </div>
             <div className="text-left">
-              <p className="text-2xl font-bold text-secondary-foreground">13</p>
+              <p className="text-2xl font-bold text-secondary-foreground">{publicCount || 13}</p>
               <p className="text-sm text-secondary-foreground/70">Fontes Oficiais</p>
             </div>
           </div>

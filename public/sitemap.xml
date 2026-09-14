@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://geodatabrasil.lovable.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://geodatabrasil.lovable.app/auth</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://geodatabrasil.lovable.app/termos-de-uso</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://geodatabrasil.lovable.app/politica-de-privacidade</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://geodatabrasil.lovable.app/politica-de-cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://geodatabrasil.lovable.app/politica-de-reembolso</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://geodatabrasil.lovable.app/licenca-de-dados</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
