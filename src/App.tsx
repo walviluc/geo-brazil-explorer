@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,23 +6,25 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { PageLoader } from "@/components/PageLoader";
+import { lazyWithRetry } from "@/lib/lazy-with-retry";
 
-const Index = lazy(() => import("./pages/Index"));
-const Auth = lazy(() => import("./pages/Auth"));
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Subscription = lazy(() => import("./pages/Subscription"));
-const SubscriptionHistory = lazy(() => import("./pages/SubscriptionHistory"));
-const Profile = lazy(() => import("./pages/Profile"));
-const AdminDataSources = lazy(() => import("./pages/AdminDataSources"));
-const AdminPlans = lazy(() => import("./pages/AdminPlans"));
-const AdminPublicSources = lazy(() => import("./pages/AdminPublicSources"));
-const AdminUsers = lazy(() => import("./pages/AdminUsers"));
-const TermsOfUse = lazy(() => import("./pages/legal/TermsOfUse"));
-const PrivacyPolicy = lazy(() => import("./pages/legal/PrivacyPolicy"));
-const CookiePolicy = lazy(() => import("./pages/legal/CookiePolicy"));
-const RefundPolicy = lazy(() => import("./pages/legal/RefundPolicy"));
-const DataLicense = lazy(() => import("./pages/legal/DataLicense"));
-const NotFound = lazy(() => import("./pages/NotFound"));
+const Index = lazyWithRetry(() => import("./pages/Index"));
+const Auth = lazyWithRetry(() => import("./pages/Auth"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Subscription = lazyWithRetry(() => import("./pages/Subscription"));
+const SubscriptionHistory = lazyWithRetry(() => import("./pages/SubscriptionHistory"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const AdminDataSources = lazyWithRetry(() => import("./pages/AdminDataSources"));
+const AdminPlans = lazyWithRetry(() => import("./pages/AdminPlans"));
+const AdminPublicSources = lazyWithRetry(() => import("./pages/AdminPublicSources"));
+const AdminUsers = lazyWithRetry(() => import("./pages/AdminUsers"));
+const TermsOfUse = lazyWithRetry(() => import("./pages/legal/TermsOfUse"));
+const PrivacyPolicy = lazyWithRetry(() => import("./pages/legal/PrivacyPolicy"));
+const CookiePolicy = lazyWithRetry(() => import("./pages/legal/CookiePolicy"));
+const RefundPolicy = lazyWithRetry(() => import("./pages/legal/RefundPolicy"));
+const DataLicense = lazyWithRetry(() => import("./pages/legal/DataLicense"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+
 
 const queryClient = new QueryClient();
 
