@@ -36,6 +36,13 @@ export const DATA_SOURCES: DataSource[] = [
     requiredPlan: 'profissional',
   },
   {
+    id: 'geoapi-limites',
+    label: 'GeoAPI — Limites Territoriais',
+    description: 'Contornos oficiais de estados, municípios e regiões (base IBGE) em GeoJSON.',
+    url: GEOAPI_SOURCE_URL,
+    category: 'territorio',
+  },
+  {
     id: 'ibge',
     label: 'IBGE — Geografia e Estatística',
     description: 'Malhas territoriais, limites, cartografia oficial do Brasil.',
