@@ -149,7 +149,6 @@ export function MapModal({ layer, onClose }: MapModalProps) {
   const [loadProgress, setLoadProgress] = useState(0);
   const [showVectorLayer, setShowVectorLayer] = useState(true);
   const [overlappingFeatures, setOverlappingFeatures] = useState<OverlappingFeature[]>([]);
-  const [selectedFeature, setSelectedFeature] = useState<OverlappingFeature | null>(null);
   const [highlightedLayer, setHighlightedLayer] = useState<L.Layer | null>(null);
   const vectorLayerRef = useRef<L.GeoJSON | null>(null);
   const allFeaturesRef = useRef<GeoJSON.Feature[]>([]);
@@ -231,7 +230,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
 
     // Close overlapping features panel
     setOverlappingFeatures([]);
-    setSelectedFeature({ feature, layer: featureLayer, id: getFeatureId(feature, 0) });
+
   }, [layer.title, highlightFeature]);
 
   const handleMapClick = useCallback((e: L.LeafletMouseEvent) => {
@@ -274,7 +273,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     if (clickedFeatures.length > 1) {
       // Multiple overlapping features - show selection panel
       setOverlappingFeatures(clickedFeatures);
-      setSelectedFeature(null);
+
       mapRef.current.closePopup();
     } else if (clickedFeatures.length === 1) {
       // Single feature - zoom and highlight directly
@@ -282,7 +281,7 @@ export function MapModal({ layer, onClose }: MapModalProps) {
     } else {
       // No features - reset
       setOverlappingFeatures([]);
-      setSelectedFeature(null);
+
       if (highlightedLayer && 'setStyle' in highlightedLayer) {
         (highlightedLayer as L.Path).setStyle({
           color: '#0891b2',
