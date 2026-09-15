@@ -650,67 +650,8 @@ export function MapModal({ layer, onClose }: MapModalProps) {
             </div>
           )}
 
-          {/* Selected Feature Details Panel */}
-          {selectedFeature && selectedFeature.feature.properties && (
-            <div className="absolute bottom-4 left-4 z-[1000] bg-background border-2 border-border shadow-lg max-w-sm">
-              <div className="flex items-center justify-between p-3 border-b border-border bg-primary text-primary-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-bold text-sm truncate" title={selectedFeature.id}>
-                    {selectedFeature.id}
-                  </span>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-6 w-6 text-primary-foreground hover:bg-primary-foreground/20"
-                  onClick={() => {
-                    setSelectedFeature(null);
-                    if (highlightedLayer && 'setStyle' in highlightedLayer) {
-                      (highlightedLayer as L.Path).setStyle({
-                        color: '#0891b2',
-                        weight: 2,
-                        opacity: 0.8,
-                        fillColor: '#0891b2',
-                        fillOpacity: 0.3
-                      });
-                    }
-                    setHighlightedLayer(null);
-                  }}
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-              <ScrollArea className="max-h-[200px]">
-                <div className="divide-y divide-border">
-                  {Object.entries(selectedFeature.feature.properties)
-                    .filter(([key, value]) => 
-                      value !== null && 
-                      value !== undefined && 
-                      value !== '' && 
-                      !key.toLowerCase().includes('geom') &&
-                      !key.toLowerCase().includes('geometry')
-                    )
-                    .slice(0, 15)
-                    .map(([key, value], index) => (
-                      <div 
-                        key={key}
-                        className={`flex justify-between gap-4 px-3 py-2 text-xs ${
-                          index % 2 === 0 ? 'bg-muted' : 'bg-background'
-                        }`}
-                      >
-                        <span className="font-medium text-muted-foreground whitespace-nowrap">
-                          {formatPropertyKey(key)}
-                        </span>
-                        <span className="text-foreground text-right truncate" title={String(value)}>
-                          {formatPropertyValue(value)}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              </ScrollArea>
-            </div>
-          )}
+
+
 
           {/* Load More Button */}
           {hasMore && !loading && !loadingMore && (
