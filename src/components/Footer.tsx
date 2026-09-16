@@ -18,7 +18,7 @@ export function Footer() {
               Premium com shapefiles curados por estado.
             </p>
             <p className="text-secondary-foreground/70 max-w-md mt-3 text-sm">
-              GeoData Brasil é um serviço operado pela Loja dos Mapas · geodadosbrasil.com.br
+              GeoData Brasil é um serviço operado pela Loja dos Mapas · geodados.lojadosmapas.com.br
             </p>
           </div>
           
