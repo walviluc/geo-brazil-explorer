@@ -21,10 +21,6 @@ export interface DataSource {
  *  the `custom-sources` edge function instead of an external WMS server. */
 export const INTERNAL_SOURCE_URL = 'internal://custom-sources';
 
-/** Sentinel URL for the GeoAPI (geoapi.com.br) territorial-limits source.
- *  Requests are routed to the `geoapi` edge function, which holds the key. */
-export const GEOAPI_SOURCE_URL = 'geoapi://limites';
-
 export const DATA_SOURCES: DataSource[] = [
   {
     id: 'internal-premium',
@@ -34,13 +30,6 @@ export const DATA_SOURCES: DataSource[] = [
     category: 'geral',
     internal: true,
     requiredPlan: 'profissional',
-  },
-  {
-    id: 'geoapi-limites',
-    label: 'GeoAPI — Limites Territoriais',
-    description: 'Contornos oficiais de estados, municípios e regiões (base IBGE) em GeoJSON.',
-    url: GEOAPI_SOURCE_URL,
-    category: 'territorio',
   },
   {
     id: 'ibge',
