@@ -17,4 +17,4 @@ Disallow: /dashboard
 Disallow: /profile
 Disallow: /subscription
 
-Sitemap: https://geodatabrasil.lovable.app/sitemap.xml
+Sitemap: https://geodados.lojadosmapas.com.br/sitemap.xml
