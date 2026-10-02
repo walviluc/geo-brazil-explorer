@@ -269,7 +269,7 @@ export default function Subscription() {
         
         <div className="text-center mt-12 space-y-2">
           <p className="text-sm text-muted-foreground">
-            Pagamento seguro processado pelo Mercado Pago
+            Pagamento seguro processado pela InfinitePay
           </p>
           <p className="text-xs text-muted-foreground/70">
             Você pode cancelar sua assinatura a qualquer momento
