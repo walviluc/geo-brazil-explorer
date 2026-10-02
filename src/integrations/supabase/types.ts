@@ -304,6 +304,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      downgrade_to_free: { Args: never; Returns: undefined }
       has_premium_plan: { Args: { _user_id: string }; Returns: boolean }
       has_role: {
         Args: {

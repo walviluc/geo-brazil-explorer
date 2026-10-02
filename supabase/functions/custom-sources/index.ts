@@ -94,10 +94,20 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Não autenticado." }, 401);
 
-    const supabase = createClient(
+    // User-scoped client: identifies the caller and checks plan/role.
+    const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: who } = await userClient.auth.getUser();
+    if (!who?.user) return json({ error: "Não autenticado." }, 401);
+
+    // Service client: the table is admin-only under RLS; this function
+    // returns only safe catalog fields and gates file access by plan.
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     const { action, id, format } = await req.json().catch(() => ({}));
@@ -126,12 +136,12 @@ Deno.serve(async (req) => {
 
       // Internal catalog: every download format requires a paid plan.
       {
-        const { data: authData } = await supabase.auth.getUser();
+        const { data: authData } = await userClient.auth.getUser();
         const uid = authData?.user?.id;
         if (!uid) return json({ error: "Não autenticado." }, 401);
         const [{ data: isPremium }, { data: isAdmin }] = await Promise.all([
-          supabase.rpc("has_premium_plan", { _user_id: uid }),
-          supabase.rpc("has_role", { _user_id: uid, _role: "admin" }),
+          userClient.rpc("has_premium_plan", { _user_id: uid }),
+          userClient.rpc("has_role", { _user_id: uid, _role: "admin" }),
         ]);
         if (!isPremium && !isAdmin) {
           return json({ error: "Formato disponível apenas para planos Profissional ou Completo.", code: "premium_required" }, 403);

@@ -23,12 +23,37 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const body = await req.json();
-    console.log('Webhook received:', JSON.stringify(body));
+    const rawBody = await req.text();
+    let body: any;
+    try { body = JSON.parse(rawBody); } catch { body = {}; }
+    const url = new URL(req.url);
+    const dataId = String(body?.data?.id ?? url.searchParams.get('data.id') ?? '');
+
+    // Verify Mercado Pago signature (x-signature: ts=...,v1=...)
+    const webhookSecret = Deno.env.get('MERCADOPAGO_WEBHOOK_SECRET');
+    if (!webhookSecret) {
+      console.error('MERCADOPAGO_WEBHOOK_SECRET not configured; rejecting webhook');
+      return new Response(JSON.stringify({ error: 'not configured' }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const sigHeader = req.headers.get('x-signature') ?? '';
+    const requestId = req.headers.get('x-request-id') ?? '';
+    const parts = Object.fromEntries(sigHeader.split(',').map((p) => p.trim().split('=') as [string, string]));
+    const ts = parts['ts'];
+    const v1 = parts['v1'];
+    if (!ts || !v1 || !/^[A-Za-z0-9]+$/.test(dataId)) {
+      return new Response(JSON.stringify({ error: 'invalid signature' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    const manifest = `id:${dataId.toLowerCase()};request-id:${requestId};ts:${ts};`;
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(webhookSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+    const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(manifest)));
+    const expected = Array.from(sig).map((b) => b.toString(16).padStart(2, '0')).join('');
+    if (expected !== v1) {
+      return new Response(JSON.stringify({ error: 'invalid signature' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     // Mercado Pago sends different types of notifications
-    if (body.type === 'payment' && body.data?.id) {
-      const paymentId = body.data.id;
+    if (body.type === 'payment' && dataId) {
+      const paymentId = dataId;
       
       // Get payment details from Mercado Pago
       const paymentResponse = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
@@ -44,10 +69,21 @@ Deno.serve(async (req) => {
       }
 
       const payment = await paymentResponse.json();
-      console.log('Payment details:', JSON.stringify(payment));
 
       // Check if payment was approved
       if (payment.status === 'approved') {
+        // Replay protection: an approved payment is only applied once.
+        const { data: existing } = await supabase
+          .from('payment_records')
+          .select('id')
+          .eq('provider', 'mercadopago')
+          .eq('payment_id', String(paymentId))
+          .eq('status', 'approved')
+          .maybeSingle();
+        if (existing) {
+          return new Response(JSON.stringify({ received: true, duplicate: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+        }
+
         // Parse external reference
         let externalRef;
         try {
@@ -58,8 +94,14 @@ Deno.serve(async (req) => {
         }
 
         const { userId, planId, billingCycle } = externalRef;
-        
-        console.log('Updating subscription for user:', userId, 'plan:', planId, 'cycle:', billingCycle);
+        const PRICES: Record<string, Record<string, number>> = {
+          profissional: { monthly: 29.90, yearly: 240 },
+          completo: { monthly: 60, yearly: 540 },
+        };
+        const expectedPrice = PRICES[planId]?.[billingCycle];
+        if (!expectedPrice || Math.abs(Number(payment.transaction_amount) - expectedPrice) > 0.01) {
+          throw new Error('Pagamento não corresponde ao plano');
+        }
 
         // Calculate expiration date
         const expiresAt = new Date();
