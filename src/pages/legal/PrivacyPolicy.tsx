@@ -39,7 +39,7 @@ const PrivacyPolicy = () => (
       <p>Seus dados são compartilhados apenas com operadores necessários ao serviço:</p>
       <ul>
         <li>Provedor de infraestrutura, banco de dados e autenticação (hospedagem em nuvem);</li>
-        <li>Provedor de pagamentos (Mercado Pago), para processar assinaturas;</li>
+        <li>Provedor de pagamentos (InfinitePay), para processar assinaturas;</li>
         <li>Autoridades públicas, quando exigido por lei ou ordem judicial.</li>
       </ul>
       <p>Não vendemos nem cedemos dados pessoais para fins publicitários de terceiros.</p>
