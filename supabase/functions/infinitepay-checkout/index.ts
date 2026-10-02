@@ -76,7 +76,7 @@ Deno.serve(async (req) => {
         handle: HANDLE,
         order_nsu: orderNsu,
         items: [{ quantity: 1, price: priceCents, description }],
-        redirect_url: `${origin}/subscription?status=pending&order=${orderNsu}`,
+        redirect_url: `${origin}/subscription/return?order=${orderNsu}`,
         webhook_url: `${supabaseUrl}/functions/v1/infinitepay-webhook`,
         customer: { email: user.email },
       }),

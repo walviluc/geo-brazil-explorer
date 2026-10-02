@@ -23,6 +23,7 @@ const PrivacyPolicy = lazyWithRetry(() => import("./pages/legal/PrivacyPolicy"))
 const CookiePolicy = lazyWithRetry(() => import("./pages/legal/CookiePolicy"));
 const RefundPolicy = lazyWithRetry(() => import("./pages/legal/RefundPolicy"));
 const DataLicense = lazyWithRetry(() => import("./pages/legal/DataLicense"));
+const CheckoutReturn = lazyWithRetry(() => import("./pages/CheckoutReturn"));
 const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
 
 
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/subscription" element={<Subscription />} />
               <Route path="/subscription/history" element={<SubscriptionHistory />} />
+              <Route path="/subscription/return" element={<CheckoutReturn />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/admin/data-sources" element={<AdminDataSources />} />
               <Route path="/admin/plans" element={<AdminPlans />} />
