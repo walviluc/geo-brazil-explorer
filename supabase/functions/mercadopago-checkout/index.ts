@@ -79,6 +79,18 @@ Deno.serve(async (req) => {
 
     console.log('Creating preference for:', { planId, billingCycle, price, userId: user.id });
 
+    // Only trusted origins may be used as payment return addresses.
+    const ALLOWED_ORIGINS = [
+      'https://geodatabrasil.lovable.app',
+      'https://id-preview--7ccf76c7-ddff-4ced-ad5a-116599c01b97.lovable.app',
+    ];
+    const reqOrigin = req.headers.get('origin') ?? '';
+    const isTrusted =
+      ALLOWED_ORIGINS.includes(reqOrigin) ||
+      /^https:\/\/[a-z0-9-]+--7ccf76c7-ddff-4ced-ad5a-116599c01b97\.lovable\.app$/.test(reqOrigin) ||
+      /^http:\/\/localhost(:\d+)?$/.test(reqOrigin);
+    const origin = isTrusted ? reqOrigin : ALLOWED_ORIGINS[0];
+
     // Create Mercado Pago preference
     const preferenceResponse = await fetch('https://api.mercadopago.com/checkout/preferences', {
       method: 'POST',
@@ -99,9 +111,9 @@ Deno.serve(async (req) => {
           email: user.email,
         },
         back_urls: {
-          success: `${req.headers.get('origin')}/subscription?status=success&plan=${planId}&cycle=${billingCycle}`,
-          failure: `${req.headers.get('origin')}/subscription?status=failure`,
-          pending: `${req.headers.get('origin')}/subscription?status=pending`,
+          success: `${origin}/subscription?status=success&plan=${planId}&cycle=${billingCycle}`,
+          failure: `${origin}/subscription?status=failure`,
+          pending: `${origin}/subscription?status=pending`,
         },
         auto_return: 'approved',
         external_reference: JSON.stringify({
