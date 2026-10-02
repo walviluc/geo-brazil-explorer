@@ -94,10 +94,20 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) return json({ error: "Não autenticado." }, 401);
 
-    const supabase = createClient(
+    // User-scoped client: identifies the caller and checks plan/role.
+    const userClient = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_ANON_KEY")!,
       { global: { headers: { Authorization: authHeader } } },
+    );
+    const { data: who } = await userClient.auth.getUser();
+    if (!who?.user) return json({ error: "Não autenticado." }, 401);
+
+    // Service client: the table is admin-only under RLS; this function
+    // returns only safe catalog fields and gates file access by plan.
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
     const { action, id, format } = await req.json().catch(() => ({}));

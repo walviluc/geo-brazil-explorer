@@ -44,27 +44,20 @@ export function useSubscription() {
     fetchSubscription();
   }, [user]);
 
-  const updateSubscription = async (plan: PlanType, billingCycle: BillingCycle) => {
+  // Only downgrades to the free plan are done here; paid plans are activated
+  // by the payment webhook on the server.
+  const updateSubscription = async (plan: PlanType, _billingCycle: BillingCycle) => {
     if (!user) return { error: new Error('Usuário não autenticado') };
+    if (plan !== 'gratuito') return { error: new Error('Planos pagos exigem pagamento.') };
 
-    const expiresAt = new Date();
-    if (billingCycle === 'monthly') {
-      expiresAt.setMonth(expiresAt.getMonth() + 1);
-    } else {
-      expiresAt.setFullYear(expiresAt.getFullYear() + 1);
-    }
+    const { error: rpcError } = await supabase.rpc('downgrade_to_free' as never);
+    if (rpcError) return { error: rpcError };
 
     const { data, error } = await supabase
       .from('subscriptions')
-      .update({
-        plan,
-        billing_cycle: billingCycle,
-        expires_at: expiresAt.toISOString(),
-        started_at: new Date().toISOString()
-      })
+      .select('*')
       .eq('user_id', user.id)
       .eq('status', 'active')
-      .select()
       .single();
 
     if (!error && data) {
