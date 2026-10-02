@@ -18,7 +18,7 @@ export function Footer() {
               Premium com shapefiles curados por estado.
             </p>
             <p className="text-secondary-foreground/70 max-w-md mt-3 text-sm">
-              GeoData Brasil é um serviço operado pela Loja dos Mapas · geodata.lojadosmapas.com.br
+              GeoData Brasil é um serviço operado pela Loja dos Mapas · geodatabrasil.lovable.app
             </p>
           </div>
           
@@ -51,8 +51,8 @@ export function Footer() {
             <ul className="space-y-3 text-secondary-foreground/70">
               <li className="flex items-center gap-2">
                 <Mail className="w-4 h-4" />
-                <a href="mailto:contato@lojadosmapas.com.br" className="hover:text-primary transition-colors break-all">
-                  contato@lojadosmapas.com.br
+                <a href="mailto:wljrodrigues@gmail.com" className="hover:text-primary transition-colors break-all">
+                  wljrodrigues@gmail.com
                 </a>
               </li>
               <li className="flex items-center gap-2">

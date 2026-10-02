@@ -10,7 +10,7 @@ const PrivacyPolicy = () => (
       <h2>1. Controlador</h2>
       <p>
         O GeoData Brasil é o controlador dos dados pessoais tratados na plataforma. Contato do encarregado
-        (DPO): <a href="mailto:contato@lojadosmapas.com.br">contato@lojadosmapas.com.br</a>.
+        (DPO): <a href="mailto:wljrodrigues@gmail.com">wljrodrigues@gmail.com</a>.
       </p>
     </div>
 
@@ -64,7 +64,7 @@ const PrivacyPolicy = () => (
         <li>Exclusão da conta — disponível diretamente na página "Meu perfil".</li>
       </ul>
       <p>
-        Pedidos podem ser enviados para <a href="mailto:contato@lojadosmapas.com.br">contato@lojadosmapas.com.br</a>.
+        Pedidos podem ser enviados para <a href="mailto:wljrodrigues@gmail.com">wljrodrigues@gmail.com</a>.
       </p>
     </div>
 

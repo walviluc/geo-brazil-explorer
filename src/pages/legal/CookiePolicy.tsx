@@ -51,7 +51,7 @@ const CookiePolicy = () => (
     <div>
       <h2>5. Contato</h2>
       <p>
-        Dúvidas: <a href="mailto:contato@lojadosmapas.com.br">contato@lojadosmapas.com.br</a>.
+        Dúvidas: <a href="mailto:wljrodrigues@gmail.com">wljrodrigues@gmail.com</a>.
       </p>
     </div>
   </LegalLayout>
