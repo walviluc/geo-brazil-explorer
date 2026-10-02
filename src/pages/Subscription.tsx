@@ -93,13 +93,13 @@ export default function Subscription() {
       return;
     }
 
-    // For paid plans, create Mercado Pago checkout
+    // For paid plans, create InfinitePay checkout
     setProcessingPlan(planId);
 
     try {
       const billingCycle: BillingCycle = isYearly ? 'yearly' : 'monthly';
       
-      const { data, error } = await supabase.functions.invoke('mercadopago-checkout', {
+      const { data, error } = await supabase.functions.invoke('infinitepay-checkout', {
         body: { planId, billingCycle }
       });
 
@@ -107,9 +107,9 @@ export default function Subscription() {
         throw new Error(error.message || 'Erro ao criar checkout');
       }
 
-      if (data?.initPoint) {
-        // Redirect to Mercado Pago checkout
-        window.location.href = data.initPoint;
+      if (data?.checkoutUrl) {
+        // Redirect to InfinitePay checkout
+        window.location.href = data.checkoutUrl;
       } else {
         throw new Error('URL de checkout não recebida');
       }
@@ -269,7 +269,7 @@ export default function Subscription() {
         
         <div className="text-center mt-12 space-y-2">
           <p className="text-sm text-muted-foreground">
-            Pagamento seguro processado pelo Mercado Pago
+            Pagamento seguro processado pela InfinitePay
           </p>
           <p className="text-xs text-muted-foreground/70">
             Você pode cancelar sua assinatura a qualquer momento

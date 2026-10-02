@@ -49,7 +49,7 @@ const TermsOfUse = () => (
       <h2>4. Planos, preços e pagamento</h2>
       <ul>
         <li>Os planos, preços e itens inclusos são exibidos na seção "Planos de Acesso" e na página de assinatura.</li>
-        <li>Os pagamentos são processados por provedor externo (Mercado Pago); não armazenamos dados de cartão.</li>
+        <li>Os pagamentos são processados por provedor externo (InfinitePay); não armazenamos dados de cartão.</li>
         <li>Assinaturas são cobradas no ciclo escolhido (mensal ou anual) e valem até a data de expiração indicada.</li>
         <li>Alterações de preço não afetam ciclos já pagos e serão comunicadas com antecedência.</li>
       </ul>

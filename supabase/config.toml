@@ -1,9 +1,9 @@
 project_id = "htltrqypfbsmhfnkqsqr"
 
-[functions.mercadopago-checkout]
+[functions.infinitepay-checkout]
 verify_jwt = false
 
-[functions.mercadopago-webhook]
+[functions.infinitepay-webhook]
 verify_jwt = false
 
 [functions.geoserver-proxy]
