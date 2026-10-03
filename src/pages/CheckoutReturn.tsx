@@ -33,8 +33,11 @@ export default function CheckoutReturn() {
         .eq('payment_id', order)
         .maybeSingle();
       if (cancelled) return;
-      if (data) setRec(data as Rec);
-      if (data?.status === 'approved' || data?.status === 'rejected' || data?.status === 'cancelled') return setDone(true);
+      // No record: the order was created before the redirect, so a missing
+      // row means the order doesn't exist for this account — fail fast.
+      if (!data) return setDone(true);
+      setRec(data as Rec);
+      if (data.status === 'approved' || data.status === 'rejected' || data.status === 'cancelled') return setDone(true);
       if (tries >= 10) return setDone(true);
       setTimeout(() => !cancelled && setTries((t) => t + 1), 3000);
     };
